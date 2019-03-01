@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--<script src="http://cdn.static.runoob.com/libs/angular.js/1.4.6/angular.min.js"></script>-->
+    <script src="jquery.js"></script>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+
+<body>
+<h2>标准登陆界面</h2>
+<!--<form action="/authentication/form" method="post">-->
+    <!--<table>-->
+        <!--<tr>-->
+            <!--<td>用户名：</td>-->
+            <!--<td><input name="username" type="text"></td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td>密码：</td>-->
+            <!--<td><input name="password" type="password"></td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td>验证码：</td>-->
+            <!--<td>-->
+                <!--<input name="imagecode" type="text">-->
+                <!--<img src="/code/image?width=200">-->
+            <!--</td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td colspan="=2">-->
+                <!--<input name="remember-me" type="checkbox" value="true">-->
+                <!--记住我-->
+            <!--</td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td colspan="2">-->
+                <!--<input type="submit">-->
+            <!--</td>-->
+        <!--</tr>-->
+
+    <!--</table>-->
+<!--</form>-->
+
+<!--<h2>短信登陆界面</h2>-->
+<!--<form action="/authentication/smsform" method="post">-->
+    <!--<table>-->
+        <!--<tr>-->
+            <!--<td>手机号：</td>-->
+            <!--<td><input name="phone" type="text"></td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td>验证码：</td>-->
+            <!--<td>-->
+                <!--<input name="smscode" type="text">-->
+                <!--<a href="/code/sms?phone=15625177108">获取短信验证码</a>-->
+            <!--</td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td colspan="=2">-->
+                <!--<input name="remember-me" type="checkbox" value="true">-->
+                <!--记住我-->
+            <!--</td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td colspan="2">-->
+                <!--<input type="submit">-->
+            <!--</td>-->
+        <!--</tr>-->
+
+    <!--</table>-->
+<!--</form>-->
+<!--<h3>社交登陆</h3>-->
+<!--<a href="/login/qq">qq登陆</a>-->
+<!--<a href="/login/wexin">微信登陆</a>-->
+
+
+<form >
+    <table>
+        <tr>
+            <td>用户名：</td>
+            <td><input id="username" type="text"></td>
+        </tr>
+        <tr>
+            <td>密码：</td>
+            <td><input id="password" type="password"></td>
+        </tr>
+        <!--<tr>-->
+            <!--<td>验证码：</td>-->
+            <!--<td>-->
+                <!--<input name="imagecode" type="text">-->
+                <!--<img src="/code/image?width=200">-->
+            <!--</td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td colspan="=2">-->
+                <!--<input name="remember-me" type="checkbox" value="true">-->
+                <!--记住我-->
+            <!--</td>-->
+        <!--</tr>-->
+        <tr>
+            <td colspan="2">
+                <input id='submit' type="submit">
+            </td>
+        </tr>
+
+    </table>
+</form>
+<script>
+    $('#submit').click(function () {
+        $.ajax({
+            type: "POST",
+            headers:{"Authorization":"Basic Y2xpZW50OjEyMzQ1Ng=="},
+            url:"/authentication/form?username=erwin&password=3231433",
+            success: function (data) {
+                alert("success");
+            }
+        })
+    });
+
+
+</script>
+</body>
+</html>
