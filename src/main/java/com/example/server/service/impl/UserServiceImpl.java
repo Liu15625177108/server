@@ -2,7 +2,7 @@ package com.example.server.service.impl;
 
 import com.example.server.common.uuid.IdCreator;
 import com.example.server.entity.User;
-import com.example.server.entity.UserRepository;
+import com.example.server.entity.repository.UserRepository;
 import com.example.server.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;

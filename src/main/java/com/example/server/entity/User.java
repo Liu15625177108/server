@@ -40,14 +40,13 @@ public class User  implements Serializable {
     @Email
     private String UserEmail;
 
-    private String UserAddress;
+//    private String UserAddress;
 
-    public User(@NotBlank String username, String password, String userPhone, @Email String userEmail, String userAddress) {
+    public User(@NotBlank String username, String password, String userPhone, @Email String userEmail) {
         userName = username;
         this.password = password;
         this.userPhone = userPhone;
         UserEmail = userEmail;
-        UserAddress = userAddress;
     }
 
     public User() {
@@ -89,14 +88,7 @@ public class User  implements Serializable {
         UserEmail = userEmail;
     }
 
-    @JsonView(detailValue.class)
-    public String getUserAddress() {
-        return UserAddress;
-    }
 
-    public void setUserAddress(String userAddress) {
-        UserAddress = userAddress;
-    }
 
     @JsonView(simpleValue.class)
     public String getUserPhone() {

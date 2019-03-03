@@ -1,5 +1,6 @@
-package com.example.server.entity;
+package com.example.server.entity.repository;
 
+import com.example.server.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

@@ -2,7 +2,7 @@ package com.example.server.security;
 
 
 
-import com.example.server.entity.UserRepository;
+import com.example.server.entity.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
