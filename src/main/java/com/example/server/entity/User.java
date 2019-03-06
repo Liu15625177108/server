@@ -2,11 +2,11 @@ package com.example.server.entity;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * @ClassName User
@@ -41,6 +41,9 @@ public class User  implements Serializable {
     private String UserEmail;
 
     private String UserAddress;
+
+    @ManyToMany
+    private Set<Conference> conferenceSet;
 
     public User(@NotBlank String username, String password, String userPhone, @Email String userEmail, String userAddress) {
         userName = username;
@@ -105,5 +108,29 @@ public class User  implements Serializable {
 
     public void setUserPhone(String userPhone) {
         this.userPhone = userPhone;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public Set<Conference> getConferences() {
+        return conferenceSet;
+    }
+
+    public void setConferences(Set<Conference> conferenceSet) {
+        this.conferenceSet = conferenceSet;
     }
 }
