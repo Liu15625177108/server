@@ -25,6 +25,8 @@ public class Paper  implements Serializable {
 
     private  String conferenceId;
 
+    private String userId;
+
 
     public Paper(String paperId, String paperTilte, Date paperSubmitTime, String paperFileName, String conferenceId) {
         this.paperId = paperId;

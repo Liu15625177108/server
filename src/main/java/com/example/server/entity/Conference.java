@@ -1,9 +1,12 @@
 package com.example.server.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import org.hibernate.annotations.GenericGenerator;
+
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @ClassName Conference
@@ -16,18 +19,23 @@ import java.util.Date;
 public class Conference implements Serializable {
 
     @javax.persistence.Id
-    private String conferenceId;
+//    @GeneratedValue(generator = "idGenerator")
+//    @GenericGenerator(name = "idGenerator", strategy = "uuid")
+    private String id;
 
-    private String conferenceName;
+    private String name;
 
-    private String conferenceAddress;
+    private String address;
 
-    private String conferenceDescription;
+    private String description;
 
-    private Date  conferenceDate;
+    private Date  date;
 
-    /**会议创办者Id*/
-    private  String  userId;
+   @ManyToMany(mappedBy = "conferenceSet")
+    private Set<User>  userSet;
+
+    /**会议创办者姓名*/
+    private  String  createName;
 
     /**会议联系人信息*/
     private String  contactName;
@@ -36,27 +44,14 @@ public class Conference implements Serializable {
 
     private String contactPhone;
 
-    public Conference(String conferenceId, String conferenceName, String conferenceAddress,
-                      String conferenceDescription, Date conferenceDate, String userId, String contactName,
-                      String contactEmail, String contactPhone) {
-        this.conferenceId = conferenceId;
-        this.conferenceName = conferenceName;
-        this.conferenceAddress = conferenceAddress;
-        this.conferenceDescription = conferenceDescription;
-        this.conferenceDate = conferenceDate;
-        this.userId = userId;
-        this.contactName = contactName;
-        this.contactEmail = contactEmail;
-        this.contactPhone = contactPhone;
-    }
 
-    public Conference(String conferenceId, String conferenceName, String conferenceAddress,
-                      String conferenceDescription, Date conferenceDate, String contactName, String contactEmail, String contactPhone) {
-        this.conferenceId = conferenceId;
-        this.conferenceName = conferenceName;
-        this.conferenceAddress = conferenceAddress;
-        this.conferenceDescription = conferenceDescription;
-        this.conferenceDate = conferenceDate;
+    public Conference(String name, String address, String description, Date date, String userName,
+                      String contactName, String contactEmail, String contactPhone) {
+        this.name = name;
+        this.address = address;
+        this.description = description;
+        this.date = date;
+        this.createName = userName;
         this.contactName = contactName;
         this.contactEmail = contactEmail;
         this.contactPhone = contactPhone;
@@ -65,52 +60,62 @@ public class Conference implements Serializable {
     public Conference() {
     }
 
-    public String getConferenceId() {
-        return conferenceId;
+    public String getId() {
+        return id;
     }
 
-    public void setConferenceId(String conferenceId) {
-        this.conferenceId = conferenceId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getConferenceName() {
-        return conferenceName;
+    public String getName() {
+        return name;
     }
 
-    public void setConferenceName(String conferenceName) {
-        this.conferenceName = conferenceName;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getConferenceAddress() {
-        return conferenceAddress;
+    public String getAddress() {
+        return address;
     }
 
-    public void setConferenceAddress(String conferenceAddress) {
-        this.conferenceAddress = conferenceAddress;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
-    public String getConferenceDescription() {
-        return conferenceDescription;
+    public String getDescription() {
+        return description;
     }
 
-    public void setConferenceDescription(String conferenceDescription) {
-        this.conferenceDescription = conferenceDescription;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public Date getConferenceDate() {
-        return conferenceDate;
+    public Date getDate() {
+        return date;
     }
 
-    public void setConferenceDate(Date conferenceDate) {
-        this.conferenceDate = conferenceDate;
+    public void setDate(Date date) {
+        this.date = date;
     }
 
-    public String getUserId() {
-        return userId;
+    public Set<User> getUserSet() {
+        return userSet;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUserSet(Set<User> userSet) {
+        this.userSet = userSet;
+    }
+
+
+
+    public String getCreateName() {
+        return createName;
+    }
+
+    public void setCreateName(String createName) {
+        this.createName = createName;
     }
 
     public String getContactName() {

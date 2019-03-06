@@ -2,11 +2,12 @@ package com.example.server.entity;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @ClassName User
@@ -27,50 +28,39 @@ public class User  implements Serializable {
 
     ;
 
+
+    private String id;
     @Id
-    private String userId;
+    @NotBlank
+    private String name;
 
     @NotBlank
-    private String userName;
-
     private String password;
 
-    private String userPhone;
+    private String hone;
 
     @Email
-    private String UserEmail;
+    private String email;
 
-//    private String UserAddress;
+    @ManyToMany
+    private Set<Conference> conferenceSet;
 
-    public User(@NotBlank String username, String password, String userPhone, @Email String userEmail) {
-        userName = username;
-        this.password = password;
-        this.userPhone = userPhone;
-        UserEmail = userEmail;
+    public String getId() {
+        return id;
     }
 
-    public User() {
+    public void setId(String id) {
+        this.id = id;
     }
 
-    @JsonView(detailValue.class)
-    public String getUserid() {
-        return userId;
+    public String getName() {
+        return name;
     }
 
-    public void setUserid(String userid) {
-        userId = userid;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    @JsonView(simpleValue.class)
-    public String getUsername() {
-        return userName;
-    }
-
-    public void setUsername(String username) {
-        userName = username;
-    }
-
-    @JsonView(detailValue.class)
     public String getPassword() {
         return password;
     }
@@ -79,23 +69,37 @@ public class User  implements Serializable {
         this.password = password;
     }
 
-    @JsonView(detailValue.class)
-    public String getUserEmail() {
-        return UserEmail;
+    public String getHone() {
+        return hone;
     }
 
-    public void setUserEmail(String userEmail) {
-        UserEmail = userEmail;
+    public void setHone(String hone) {
+        this.hone = hone;
     }
 
-
-
-    @JsonView(simpleValue.class)
-    public String getUserPhone() {
-        return userPhone;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUserPhone(String userPhone) {
-        this.userPhone = userPhone;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Set<Conference> getConferenceSet() {
+        return conferenceSet;
+    }
+
+    public void setConferenceSet(Set<Conference> conferenceSet) {
+        this.conferenceSet = conferenceSet;
+    }
+
+    public User(@NotBlank String name, @NotBlank String password, String hone, @Email String email) {
+        this.name = name;
+        this.password = password;
+        this.hone = hone;
+        this.email = email;
+    }
+
+    public User() {
     }
 }
