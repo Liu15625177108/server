@@ -2,7 +2,7 @@ package com.example.server.security;
 
 
 
-import com.example.server.entity.UserRepository;
+import com.example.server.entity.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
@@ -30,8 +30,8 @@ public class MyUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        if (userRepository.existsByUserName(s)) {
-            com.example.server.entity.User user = userRepository.findOneByUserName(s);
+        if (userRepository.existsByName(s)) {
+            com.example.server.entity.User user = userRepository.findOneByName(s);
             return new User(s, user.getPassword(), AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_USER"));
         }
         else {

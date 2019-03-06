@@ -1,9 +1,11 @@
 package com.example.server.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import org.hibernate.annotations.GenericGenerator;
+
+import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -15,14 +17,48 @@ import java.util.Set;
  */
 @Entity
 public class Conference implements Serializable {
-    @Id
+
+    @javax.persistence.Id
+//    @GeneratedValue(generator = "idGenerator")
+//    @GenericGenerator(name = "idGenerator", strategy = "uuid")
     private String id;
 
     private String name;
 
-    @ManyToMany(mappedBy = "conferenceSet")
-    private Set<User> users;
+    private String address;
 
+    private String description;
+
+    private Date  date;
+
+   @ManyToMany(mappedBy = "conferenceSet")
+    private Set<User>  userSet;
+
+    /**会议创办者姓名*/
+    private  String  createName;
+
+    /**会议联系人信息*/
+    private String  contactName;
+
+    private  String contactEmail;
+
+    private String contactPhone;
+
+
+    public Conference(String name, String address, String description, Date date, String userName,
+                      String contactName, String contactEmail, String contactPhone) {
+        this.name = name;
+        this.address = address;
+        this.description = description;
+        this.date = date;
+        this.createName = userName;
+        this.contactName = contactName;
+        this.contactEmail = contactEmail;
+        this.contactPhone = contactPhone;
+    }
+
+    public Conference() {
+    }
 
     public String getId() {
         return id;
@@ -40,19 +76,69 @@ public class Conference implements Serializable {
         this.name = name;
     }
 
-    public Set<User> getUsers() {
-        return users;
+    public String getAddress() {
+        return address;
     }
 
-    public void setUsers(Set<User> users) {
-        this.users = users;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
-    public Conference(String id, String name) {
-        this.id = id;
-        this.name = name;
+    public String getDescription() {
+        return description;
     }
 
-    public Conference() {
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public Set<User> getUserSet() {
+        return userSet;
+    }
+
+    public void setUserSet(Set<User> userSet) {
+        this.userSet = userSet;
+    }
+
+
+
+    public String getCreateName() {
+        return createName;
+    }
+
+    public void setCreateName(String createName) {
+        this.createName = createName;
+    }
+
+    public String getContactName() {
+        return contactName;
+    }
+
+    public void setContactName(String contactName) {
+        this.contactName = contactName;
+    }
+
+    public String getContactEmail() {
+        return contactEmail;
+    }
+
+    public void setContactEmail(String contactEmail) {
+        this.contactEmail = contactEmail;
+    }
+
+    public String getContactPhone() {
+        return contactPhone;
+    }
+
+    public void setContactPhone(String contactPhone) {
+        this.contactPhone = contactPhone;
     }
 }

@@ -1,9 +1,10 @@
 package com.example.server;
 
 import com.example.server.entity.Conference;
-import com.example.server.entity.ConferenceRepository;
 import com.example.server.entity.User;
-import com.example.server.entity.UserRepository;
+
+import com.example.server.entity.repository.ConferenceRepository;
+import com.example.server.entity.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -34,17 +35,17 @@ public class ServerApplication {
     @GetMapping("/users")
     public String user(){
         User user;
-        user = userRepository.findOneByUserName("tom");
-        Set<Conference> conferenceSet=user.getConferences();
+        user = userRepository.findOneByName("tom");
+        Set<Conference> conferenceSet=user.getConferenceSet();
         Conference conference=conferenceRepository.findOneById("0001");
-        Set<User>users=conference.getUsers();
+        Set<User>users=conference.getUserSet();
 //        System.out.println(conferenceSet);
 
         for(Conference value:conferenceSet){
             System.out.println(value.getName()+"eeeee");
         }
         for(User value:users){
-            System.out.println(value.getUserName()+"hhhh");
+            System.out.println(value.getName()+"hhhh");
         }
         return "hello";
     }

@@ -12,4 +12,5 @@ import com.example.server.entity.User;
 public interface UserService {
     public boolean signup(User user);
     public User  showSimple(String userName);
+    public boolean attendConference(String userName,String conferenceId);
 }

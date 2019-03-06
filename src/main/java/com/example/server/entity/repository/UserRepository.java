@@ -1,6 +1,9 @@
-package com.example.server.entity;
+package com.example.server.entity.repository;
 
+import com.example.server.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 /**
  * @ClassName UserRepository
@@ -17,7 +20,9 @@ public interface UserRepository extends JpaRepository<User,String> {
      *@Date:16:58 2018/9/5
      *@Package: com.example.remote.user.entity
      */
-    public User findOneByUserName(String userName);
+    public User findOneByName(String ame);
 
-    public boolean existsByUserName(String userName);
+    public boolean existsByName(String name);
+
+
 }
