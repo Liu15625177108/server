@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import jdk.nashorn.internal.runtime.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -41,15 +42,10 @@ public class UserController {
      *@Date:16:41 2018/9/10
      *@Package: com.example.remote.user
      */
-    @GetMapping("/test")
-    public boolean sayHello(@RequestParam("userName")String userName,@RequestParam("conferenceId")String conferenceId){
-//     return userService.attendOrNot(userName,conferenceId);
-        String str[]={"小","蔡","子","上","完","厕","所","没"};
-        for(String str1:str) {
-            sendEmialUtil.sendEmail(str1, "yayaooooyaaoooo", "tomomm@qq.com");
-        }
-        return  true;
-    }
+//    @GetMapping("/test")
+//    public boolean sayHello(@RequestParam("userName")String userName,@RequestParam("conferenceId")String conferenceId){
+
+//    }
 //    @GetMapping("/test1")
 //    public boolean sayHello1(@RequestParam("userName")String userName,@RequestParam("conferenceId")String conferenceId){
 //        return userService.createOrNot(userName,conferenceId);
@@ -63,10 +59,10 @@ public class UserController {
      *@Date:16:41 2018/9/10
      *@Package: com.example.remote.user
      */
-    @GetMapping("/me")
-    public Object aboutme(){
-        return SecurityContextHolder.getContext().getAuthentication();
-    }
+//    @GetMapping("/me")
+//    public Object aboutme(){
+//        return SecurityContextHolder.getContext().getAuthentication();
+//    }
 
     /**
      *@Author Jerry.Liu
@@ -95,8 +91,8 @@ public class UserController {
     }
     @GetMapping("/simpleshow")
 //    @JsonView(User.simpleValue.class)
-    public User showSimple(@RequestParam(required = true,name = "userName",defaultValue = "erwin")String userName){
-        return userService.showSimple(userName);
+    public User showSimple(Authentication authentication){
+        return userService.showSimple(authentication.getName());
     }
 /**
 *@Author Jerry.Liu
@@ -106,8 +102,8 @@ public class UserController {
 *@Package: com.example.server.controller
 */
     @PostMapping("/attend")
-    public ResultInfo attendConference(@RequestParam(name = "userName")String userName,@RequestParam("conferenceId")String conferenceId){
-        if(userService.attendConference(userName,conferenceId)){
+    public ResultInfo attendConference(Authentication authentication,@RequestParam("conferenceId")String conferenceId){
+        if(userService.attendConference(authentication.getName(),conferenceId)){
             return new ResultInfo(HttpStatus.OK,"success","报名成功");
         }
         return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure","报名失败");
@@ -120,8 +116,8 @@ public class UserController {
     *@Package: com.example.server.controller
     */
     @GetMapping("/show/create")
-    public List<Conference> show(@RequestParam(name = "userName")String userName){
-        return  userService.showMyCreateConference(userName);
+    public List<Conference> show(Authentication authentication){
+        return  userService.showMyCreateConference(authentication.getName());
     }
 
     /**
@@ -132,8 +128,8 @@ public class UserController {
     *@Package: com.example.server.controller
     */
     @GetMapping("show/attend")
-    public Set<Conference> showAttend(@RequestParam(name = "userName")String userName){
-        return  userService.showMyAttendConference(userName);
+    public Set<Conference> showAttend(Authentication authentication){
+        return  userService.showMyAttendConference(authentication.getName());
     }
 }
 

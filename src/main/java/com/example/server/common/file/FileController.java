@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,7 +23,8 @@ public class FileController {
     @Autowired
     private PaperService paperService;
 //    String floder="D:\\20152100172\\demosecurity\\src\\main\\java\\com\\example\\demosecurity\\api\\controller\\";
-    String floder="C:\\Users\\Administrator\\Desktop\\server\\";
+//    String floder="C:\\Users\\Administrator\\Desktop\\server\\";
+    String floder="/home/ubuntu/file/";
 
     @GetMapping("/download/{id}")
     public  void downLoad(@PathVariable String id, HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -48,10 +50,10 @@ public class FileController {
 //
 //    }
     @PostMapping(value = "/upload",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Object> uploadFile(@RequestParam("file")MultipartFile file,@RequestParam("paperTitle")String paperTitle,
-                                             @RequestParam("conferenceId")String conferenceId,@RequestParam("userName")String userName) throws IOException {
+    public ResponseEntity<Object> uploadFile(@RequestParam("file")MultipartFile file, @RequestParam("paperTitle")String paperTitle,
+                                             @RequestParam("conferenceId")String conferenceId, Authentication authentication) throws IOException {
 //        Paper paper=new Paper(file.getOriginalFilename());
-            Paper paper=new Paper(paperTitle,conferenceId,userName);
+            Paper paper=new Paper(paperTitle,conferenceId,authentication.getName());
             paper.setPaperFileName(file.getOriginalFilename());
             if(paperService.create(paper)) {
                 System.out.println(file.getOriginalFilename());

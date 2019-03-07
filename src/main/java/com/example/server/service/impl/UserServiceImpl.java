@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean signup( User user) {
         if(userRepository.findOneByName(user.getName())==null) {
-//            user.setUserid(idCreator.createId());
+            user.setId(idCreator.createId());
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
             return true;
@@ -140,6 +140,11 @@ public class UserServiceImpl implements UserService {
             return  true;
         }
         return false;
+    }
+
+    @Override
+    public List<User> findAll() {
+        return userRepository.findAll();
     }
 }
 

@@ -21,4 +21,5 @@ public interface UserService {
     public Set<Conference> showMyAttendConference(String userName);
     public  boolean attendOrNot(String userName,String conferenceId);
     public  boolean createOrNot(String userName,String conferenceId);
+    public  List<User> findAll();
 }

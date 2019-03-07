@@ -39,10 +39,12 @@ public class User  implements Serializable {
     @NotBlank
     private String password;
 
-    private String hone;
+    private String phone;
 
     @Email
     private String email;
+
+    private  String role;
 
     @ManyToMany
     @JsonIgnoreProperties("userSet")
@@ -72,13 +74,7 @@ public class User  implements Serializable {
         this.password = password;
     }
 
-    public String getHone() {
-        return hone;
-    }
 
-    public void setHone(String hone) {
-        this.hone = hone;
-    }
 
     public String getEmail() {
         return email;
@@ -92,15 +88,39 @@ public class User  implements Serializable {
         return conferenceSet;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     public void setConferenceSet(Set<Conference> conferenceSet) {
         this.conferenceSet = conferenceSet;
     }
 
-    public User(@NotBlank String name, @NotBlank String password, String hone, @Email String email) {
+    public User(@NotBlank String name, @NotBlank String password, String phone, @Email String email) {
         this.name = name;
         this.password = password;
-        this.hone = hone;
+        this.phone = phone;
         this.email = email;
+        this.role="user";
+    }
+    public User(@NotBlank String name, @NotBlank String password, String phone, @Email String email,String role) {
+        this.name = name;
+        this.password = password;
+        this.phone = phone;
+        this.email = email;
+        this.role=role;
     }
 
     public User() {

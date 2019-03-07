@@ -4,12 +4,17 @@ import com.example.server.entity.Conference;
 import com.example.server.entity.User;
 import com.example.server.entity.repository.ConferenceRepository;
 import com.example.server.entity.repository.UserRepository;
-import org.apache.tomcat.util.http.parser.Authorization;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import org.apache.commons.lang.StringUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -50,8 +55,12 @@ public class Controller {
     }
 
     @GetMapping("/me")
-    public Object aboutMe(Authentication authentication) {
+    public Object aboutMe(Authentication authentication, HttpServletRequest httpServletRequest) throws UnsupportedEncodingException {
+//        String header=httpServletRequest.getHeader("Authorization");
+//        String token = StringUtils.substringAfter(header,"bearer ");
+//        Claims claims= Jwts.parser().setSigningKey("liuyuxin".getBytes("UTF-8")).parseClaimsJws(token).getBody();
         return authentication;
+//        return  claims;
     }
 
 }
