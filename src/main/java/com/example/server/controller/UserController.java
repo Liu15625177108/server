@@ -1,6 +1,7 @@
 package com.example.server.controller;
 
 import com.example.server.common.entity.ResultInfo;
+import com.example.server.common.sender.emailsender.SendEmialUtil;
 import com.example.server.entity.Conference;
 import com.example.server.entity.User;
 import com.example.server.service.UserService;
@@ -30,6 +31,8 @@ public class UserController {
     /**注入用户service对象*/
     @Autowired
     private UserService userService;
+    @Autowired
+    private SendEmialUtil sendEmialUtil;
 
     /**
      *@Author Jerry.Liu
@@ -38,10 +41,15 @@ public class UserController {
      *@Date:16:41 2018/9/10
      *@Package: com.example.remote.user
      */
-//    @GetMapping("/test")
-//    public boolean sayHello(@RequestParam("userName")String userName,@RequestParam("conferenceId")String conferenceId){
+    @GetMapping("/test")
+    public boolean sayHello(@RequestParam("userName")String userName,@RequestParam("conferenceId")String conferenceId){
 //     return userService.attendOrNot(userName,conferenceId);
-//    }
+        String str[]={"小","蔡","子","上","完","厕","所","没"};
+        for(String str1:str) {
+            sendEmialUtil.sendEmail(str1, "yayaooooyaaoooo", "tomomm@qq.com");
+        }
+        return  true;
+    }
 //    @GetMapping("/test1")
 //    public boolean sayHello1(@RequestParam("userName")String userName,@RequestParam("conferenceId")String conferenceId){
 //        return userService.createOrNot(userName,conferenceId);
@@ -90,18 +98,39 @@ public class UserController {
     public User showSimple(@RequestParam(required = true,name = "userName",defaultValue = "erwin")String userName){
         return userService.showSimple(userName);
     }
-
-    @GetMapping("/attend")
+/**
+*@Author Jerry.Liu
+*@Description://输入用户名以及会议id,返回报名结果。
+*@Parameter
+*@Date:18:09 2019/3/7
+*@Package: com.example.server.controller
+*/
+    @PostMapping("/attend")
     public ResultInfo attendConference(@RequestParam(name = "userName")String userName,@RequestParam("conferenceId")String conferenceId){
         if(userService.attendConference(userName,conferenceId)){
             return new ResultInfo(HttpStatus.OK,"success","报名成功");
         }
         return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure","报名失败");
     }
+    /**
+    *@Author Jerry.Liu
+    *@Description://输入一个用户名，返回他创建的会议信息；
+    *@Parameter
+    *@Date:18:09 2019/3/7
+    *@Package: com.example.server.controller
+    */
     @GetMapping("/show/create")
     public List<Conference> show(@RequestParam(name = "userName")String userName){
         return  userService.showMyCreateConference(userName);
     }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://输入一个用户名，返回他参加的会议信息；
+    *@Parameter
+    *@Date:18:10 2019/3/7
+    *@Package: com.example.server.controller
+    */
     @GetMapping("show/attend")
     public Set<Conference> showAttend(@RequestParam(name = "userName")String userName){
         return  userService.showMyAttendConference(userName);

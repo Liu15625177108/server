@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
 
     /**
     *@Author Jerry.Liu
-    *@Description://TODO
+    *@Description://输出用户创建的会议
     *@Parameter
     *@Date:10:00 2019/3/7
     *@Package: com.example.server.service.impl
@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
 
     /**
     *@Author Jerry.Liu
-    *@Description://TODO
+    *@Description://输入userName,输出该user参加的会议信息。
     *@Parameter
     *@Date:10:00 2019/3/7
     *@Package: com.example.server.service.impl
@@ -126,6 +126,13 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    /**
+    *@Author Jerry.Liu
+    *@Description://输入用户username，以及会议id 返回是否是该用户创建的会议情况，是返回true；
+  *@Parameter
+    *@Date:17:52 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
     @Override
     public boolean createOrNot(String userName, String conferenceId) {
         Conference conference=conferenceRepository.findOneById(conferenceId);

@@ -2,6 +2,7 @@ package com.example.server.controller;
 
 import com.example.server.common.entity.ResultInfo;
 import com.example.server.entity.Conference;
+import com.example.server.entity.User;
 import com.example.server.service.ConferenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @ClassName ConferenceController
@@ -37,6 +39,24 @@ public class ConferenceController {
     @GetMapping("/all")
     public List<Conference> showAll(){
         return  conferenceService.findAll();
-        }
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://输入一个会议id，返回参加会议的users
+    *@Parameter
+    *@Date:18:12 2019/3/7
+    *@Package: com.example.server.controller
+    */
+    @GetMapping("/users")
+    public Set<User> conferenceAttendUser(@RequestParam("conferenceId")String conferenceId){
+        return  conferenceService.attendConferenceUsers(conferenceId);
+    }
+
+    @GetMapping("/details")
+    public Conference conferenceDetails(@RequestParam("conferenceId") String conferenceId){
+        return  conferenceService.findOneByConferenceId(conferenceId);
+    }
+
 
 }

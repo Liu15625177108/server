@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @ClassName PaperServiceImpl
@@ -33,5 +34,16 @@ public class PaperServiceImpl implements PaperService {
     @Override
     public Paper findOneByPaperId(String paperId) {
         return  paperRepository.findOneByPaperId(paperId);
+    }
+
+
+    @Override
+    public List<Paper> findAllByUserName(String userName) {
+        return paperRepository.findAllByUserName(userName);
+    }
+
+    @Override
+    public List<Paper> findAllByConferenceId(String conferenceId) {
+        return  paperRepository.findAllByConferenceId(conferenceId);
     }
 }

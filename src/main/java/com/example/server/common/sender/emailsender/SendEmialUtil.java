@@ -5,6 +5,8 @@ package com.example.server.common.sender.emailsender;
 
 
 
+import org.springframework.stereotype.Service;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -20,6 +22,7 @@ import java.util.regex.Pattern;
  * @Package com.example.remote.common.sender.emailsender
  * @Date 2018/9/13 9:45
  */
+@Service
 public class SendEmialUtil {
     public boolean sendEmail(String Title,String Text,String toEmail){
         try {
@@ -35,7 +38,7 @@ public class SendEmialUtil {
             msg.setText(Text); //设置邮件内容
             msg.setSubject(Title); //设置邮件主题
             Transport trans = session.getTransport();
-            trans.connect("smtp.qq.com", 25, "2447152234", "yonoaicaxrnpeacc"); //连接邮箱smtp服务器，25为默认端口
+            trans.connect("smtp.qq.com", 25, "2447152234", "rfapbcytoktaebaf"); //连接邮箱smtp服务器，25为默认端口
 
             trans.sendMessage(msg, new Address[]{new InternetAddress(toEmail)}); //发送邮件
 

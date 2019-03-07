@@ -2,12 +2,14 @@ package com.example.server.service.impl;
 
 import com.example.server.common.uuid.IdCreator;
 import com.example.server.entity.Conference;
+import com.example.server.entity.User;
 import com.example.server.entity.repository.ConferenceRepository;
 import com.example.server.service.ConferenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @ClassName ConferenceServiceImpl
@@ -31,6 +33,13 @@ public class ConferenceServiceImpl implements ConferenceService {
 
     }
 
+    /**
+    *@Author Jerry.Liu
+    *@Description://TODO
+    *@Parameter
+    *@Date:17:45 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
     @Override
     public List<Conference> findAll() {
             return conferenceRepository.findAll();
@@ -39,5 +48,18 @@ public class ConferenceServiceImpl implements ConferenceService {
     @Override
     public Conference findOneByConferenceId(String conferenceId) {
         return conferenceRepository.findOneById(conferenceId);
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://输出参加会议的人员。
+     **@Parameter
+    *@Date:17:49 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
+    @Override
+    public Set<User> attendConferenceUsers(String conferenceId) {
+        Conference conference= conferenceRepository.findOneById(conferenceId);
+        return  conference.getUserSet();
     }
 }
