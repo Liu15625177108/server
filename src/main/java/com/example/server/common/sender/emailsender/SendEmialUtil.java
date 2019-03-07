@@ -33,7 +33,7 @@ public class SendEmialUtil {
             msg.setText(Text); //设置邮件内容
             msg.setSubject(Title); //设置邮件主题
             Transport trans = session.getTransport();
-            trans.connect("smtp.qq.com", 25, "2447152234", "yonoaicaxrnpeacc"); //连接邮箱smtp服务器，25为默认端口
+            trans.connect("smtp.qq.com", 25, "2447152234", "rfapbcytoktaebaf"); //连接邮箱smtp服务器，25为默认端口
 
             trans.sendMessage(msg, new Address[]{new InternetAddress(toEmail)}); //发送邮件
 

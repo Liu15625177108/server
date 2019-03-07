@@ -25,7 +25,7 @@
 
   <!--nav bar-->
   <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-    <a class="navbar-brand" href="#">System</a>
+    <a class="navbar-brand" href="/">学术会议系统</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -34,10 +34,10 @@
       <ul class="navbar-nav mr-auto text-right">
 
         <li class="nav-item">
-          <a class="nav-link" href="#">会议</a>
+          <a class="nav-link" href="/conferenceList.html">会议</a>
         </li>
-        <li class="nav-item active">
-          <a class="nav-link" href="#">个人中心<span class="sr-only">(current)</span></a>
+        <li class="nav-item">
+          <a class="nav-link" href="/userInfo.html">个人中心<span class="sr-only">(current)</span></a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#">登出</a>
@@ -79,10 +79,10 @@
     <div class="form-group">
       <label for="exampleInputPassword1">Password:</label>
       <input type="password" ng-model="password" ng-minlength="6" class="form-control" id="exampleInputPassword1" placeholder="Password" required>
-      <span class="warning" ng-show="angularForm.pwd.$error.minlength">最少为6位数</span>
-      <div class="invalid-feedback" >
-        password 不可为空白
-      </div>
+      <!--<span class="warning" ng-show="angularForm.pwd.$error.minlength">最少为6位数</span>-->
+      <!--<div class="invalid-feedback" >-->
+        <!--password 不可为空白-->
+      <!--</div>-->
     </div>
     <div class="form-group">
       <label for="exampleInputPassword1">Verify Password:</label>

@@ -1,5 +1,6 @@
 package com.example.server.security;
 
+import com.example.server.common.sender.emailsender.SendEmialUtil;
 import com.example.server.entity.Conference;
 import com.example.server.entity.User;
 import com.example.server.entity.repository.ConferenceRepository;
@@ -30,21 +31,19 @@ public class Controller {
 
     @GetMapping("/hello")
     public String sayhello(){
-        List<User> list=userRepository.findAll();
-        List<Conference> conferences=conferenceRepository.findAll();
+//        List<User> list=userRepository.findAll();
+//        List<Conference> conferences=conferenceRepository.findAll();
+//
+//            for(Conference conference:conferences) {
+////                user.getConferenceSet().add(conference);
+//                for (User user : conference.getUserSet()) {
+//                    System.out.println(user.getName());
+//                }
+//            }
+////            userRepository.save(user);'
 
-            for(Conference conference:conferences) {
-//                user.getConferenceSet().add(conference);
-                for (User user : conference.getUserSet()) {
-                    System.out.println(user.getName());
-                }
-            }
-//            userRepository.save(user);'
-
-
-
-
-
+        SendEmialUtil sendEmialUtil=new SendEmialUtil();
+        sendEmialUtil.sendEmail("test","dsdjshdjkajdakd","tomomm@qq.com");
 
         return  "hello";
     }
