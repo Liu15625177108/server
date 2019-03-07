@@ -64,9 +64,9 @@
       <label for="exampleInputEmail1">Email address：</label>
       <input type="email" ng-model="email"  class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" required>
       <!--<small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>-->
-      <span class="invalid-feedback" ng-show=email.$error.required">
-        email 不可为空白
-      </span>
+      <!--<span class="invalid-feedback" ng-show=email.$error.required">-->
+        <!--email 不可为空白-->
+      <!--</span>-->
     </div>
     <div class="form-group">
       <label for="user-name-label">User Name:</label>
@@ -75,6 +75,15 @@
         <!--name 不可为空白-->
       <!--</span>-->
     </div>
+
+    <div class="form-group">
+      <label for="user-name-label">User Phone:</label>
+      <input type="text" ng-model="userPhone" class="form-control" id="userPhone" placeholder="user phone" required>
+      <!--<span style="color:red" ng-show="userName.$error.required">-->
+      <!--name 不可为空白-->
+      <!--</span>-->
+    </div>
+
 
     <div class="form-group">
       <label for="exampleInputPassword1">Password:</label>
@@ -87,9 +96,9 @@
     <div class="form-group">
       <label for="exampleInputPassword1">Verify Password:</label>
       <input type="password" ng-model="verifyPassword" class="form-control" id="exampleInputPassword2" placeholder="Verify Password" required>
-      <div class="invalid-feedback" ng-show="">
-        Verify Password 不可为空白
-      </div>
+      <!--<div class="invalid-feedback" ng-show="">-->
+        <!--Verify Password 不可为空白-->
+      <!--</div>-->
     </div>
 
 
