@@ -32,7 +32,11 @@ public class MyUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
         if (userRepository.existsByName(s)) {
             com.example.server.entity.User user = userRepository.findOneByName(s);
-            return new User(s, user.getPassword(), AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_USER"));
+            if(user.getRole().equals("user")) {
+                return new User(s, user.getPassword(), AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_USER"));
+            }else {
+                return new  User(s, user.getPassword(), AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_ADMIN"));
+            }
         }
         else {
             throw  new UsernameNotFoundException("不存在的用户名");

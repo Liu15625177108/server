@@ -1,8 +1,10 @@
 package com.example.server.service;
 
 import com.example.server.entity.Conference;
+import com.example.server.entity.User;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @ClassName ConferenceService
@@ -14,5 +16,8 @@ import java.util.List;
 public interface ConferenceService {
     public  boolean createConference(Conference conference);
     public List<Conference> findAll();
+    public  Conference findOneByConferenceId(String conferenceId);
+    public Set<User>  attendConferenceUsers(String conferenceId);
+
 
 }

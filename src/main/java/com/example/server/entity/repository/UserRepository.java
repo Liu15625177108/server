@@ -20,7 +20,7 @@ public interface UserRepository extends JpaRepository<User,String> {
      *@Date:16:58 2018/9/5
      *@Package: com.example.remote.user.entity
      */
-    public User findOneByName(String ame);
+    public User findOneByName(String name);
 
     public boolean existsByName(String name);
 

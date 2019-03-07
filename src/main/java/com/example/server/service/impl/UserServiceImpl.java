@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * @ClassName UserServiceImpl
  * @Author:Jerry.Liu;
@@ -29,10 +32,17 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    /**
+    *@Author Jerry.Liu
+    *@Description://用户注册
+    *@Parameter
+    *@Date:9:57 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
     @Override
     public boolean signup( User user) {
         if(userRepository.findOneByName(user.getName())==null) {
-//            user.setUserid(idCreator.createId());
+            user.setId(idCreator.createId());
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
             return true;
@@ -44,8 +54,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      *@Author Jerry.Liu
-     *@Description://TODO
-     *@Parameter
+     *@Description://查找一个用户信息，并且返回
      *@Date:23:53 2019/2/13
      *@Package: com.example.conferencedemo.user.service.impl
      */
@@ -54,6 +63,13 @@ public class UserServiceImpl implements UserService {
         return userRepository.findOneByName(userName);
     }
 
+    /**
+    *@Author Jerry.Liu
+    *@Description://用户报名参加会议，往关联表插入一条记录。
+     **@Parameter
+    *@Date:9:58 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
     @Override
     public boolean attendConference(String userName,String conferenceId) {
         if(userRepository.existsByName(userName)&&conferenceRepository.existsById(conferenceId)){
@@ -64,6 +80,71 @@ public class UserServiceImpl implements UserService {
             return  true;
         }
         return false;
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://输出用户创建的会议
+    *@Parameter
+    *@Date:10:00 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
+    @Override
+    public List<Conference> showMyCreateConference(String userName) {
+        return conferenceRepository.findAllByCreateName(userName);
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://输入userName,输出该user参加的会议信息。
+    *@Parameter
+    *@Date:10:00 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
+    @Override
+    public Set<Conference> showMyAttendConference(String userName) {
+        User user =userRepository.findOneByName(userName);
+        return  user.getConferenceSet();
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://是否参加此会议，参加放回true；
+    *@Parameter
+    *@Date:13:53 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
+    @Override
+    public boolean attendOrNot(String userName, String conferenceId) {
+        User user =userRepository.findOneByName(userName);
+        for(Conference conference:user.getConferenceSet()) {
+            if (conference.getId().equals(conferenceId)) {
+                return true;
+            }
+        }
+        return  false;
+
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://输入用户username，以及会议id 返回是否是该用户创建的会议情况，是返回true；
+  *@Parameter
+    *@Date:17:52 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
+    @Override
+    public boolean createOrNot(String userName, String conferenceId) {
+        Conference conference=conferenceRepository.findOneById(conferenceId);
+        if (conference.getCreateName().equals(userName)){
+            return  true;
+        }
+        return false;
+    }
+
+    @Override
+    public List<User> findAll() {
+        return userRepository.findAll();
     }
 }
 

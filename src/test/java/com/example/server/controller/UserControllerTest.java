@@ -67,11 +67,4 @@ public class UserControllerTest {
         myLogger.getLogger().info(result);
 
     }
-
-    @Test
-    public void attend() throws Exception{
-
-    }
-
-
 }

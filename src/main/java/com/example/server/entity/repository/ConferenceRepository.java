@@ -4,6 +4,8 @@ import com.example.server.entity.Conference;
 import org.springframework.data.jpa.repository.JpaRepository;
 //import org.springframework.data.redis.connection.ReactiveListCommands;
 
+import java.util.List;
+
 /**
  * @ClassName ConferenceRepository
  * @Author:Jerry.Liu;
@@ -15,4 +17,5 @@ public interface ConferenceRepository extends JpaRepository<Conference,String> {
 //    public boolean existsById(String id);
 
     public Conference findOneById(String id);
+    public List<Conference> findAllByCreateName(String createName);
 }

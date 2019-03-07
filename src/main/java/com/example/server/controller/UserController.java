@@ -1,22 +1,22 @@
 package com.example.server.controller;
 
 import com.example.server.common.entity.ResultInfo;
+import com.example.server.common.sender.emailsender.SendEmialUtil;
 import com.example.server.entity.Conference;
 import com.example.server.entity.User;
 import com.example.server.service.UserService;
 import com.fasterxml.jackson.annotation.JsonView;
+import jdk.nashorn.internal.runtime.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @ClassName UserController
@@ -32,6 +32,8 @@ public class UserController {
     /**注入用户service对象*/
     @Autowired
     private UserService userService;
+    @Autowired
+    private SendEmialUtil sendEmialUtil;
 
     /**
      *@Author Jerry.Liu
@@ -40,13 +42,14 @@ public class UserController {
      *@Date:16:41 2018/9/10
      *@Package: com.example.remote.user
      */
-    @GetMapping("/sayhello")
-    public Map sayHello(){
-        Map map =new HashMap<String ,String>();
-//        User user=new User("aa","123456","1232","244@qq.com");
-        map.put("aa","1234");
-        return map;
-    }
+//    @GetMapping("/test")
+//    public boolean sayHello(@RequestParam("userName")String userName,@RequestParam("conferenceId")String conferenceId){
+
+//    }
+//    @GetMapping("/test1")
+//    public boolean sayHello1(@RequestParam("userName")String userName,@RequestParam("conferenceId")String conferenceId){
+//        return userService.createOrNot(userName,conferenceId);
+//    }
 
 
     /**
@@ -56,10 +59,10 @@ public class UserController {
      *@Date:16:41 2018/9/10
      *@Package: com.example.remote.user
      */
-    @GetMapping("/me")
-    public Object aboutme(){
-        return SecurityContextHolder.getContext().getAuthentication();
-    }
+//    @GetMapping("/me")
+//    public Object aboutme(){
+//        return SecurityContextHolder.getContext().getAuthentication();
+//    }
 
     /**
      *@Author Jerry.Liu
@@ -87,17 +90,46 @@ public class UserController {
 
     }
     @GetMapping("/simpleshow")
-    @JsonView(User.simpleValue.class)
-    public User showSimple(@RequestParam(required = true,name = "username",defaultValue = "erwin")String userName){
-        return userService.showSimple(userName);
+//    @JsonView(User.simpleValue.class)
+    public User showSimple(Authentication authentication){
+        return userService.showSimple(authentication.getName());
     }
-
-    @GetMapping("/attend")
-    public ResultInfo attendConference(@RequestParam(name = "userName")String userName,@RequestParam("conferenceId")String conferenceId){
-        if(userService.attendConference(userName,conferenceId)){
+/**
+*@Author Jerry.Liu
+*@Description://输入用户名以及会议id,返回报名结果。
+*@Parameter
+*@Date:18:09 2019/3/7
+*@Package: com.example.server.controller
+*/
+    @PostMapping("/attend")
+    public ResultInfo attendConference(Authentication authentication,@RequestParam("conferenceId")String conferenceId){
+        if(userService.attendConference(authentication.getName(),conferenceId)){
             return new ResultInfo(HttpStatus.OK,"success","报名成功");
         }
         return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure","报名失败");
+    }
+    /**
+    *@Author Jerry.Liu
+    *@Description://输入一个用户名，返回他创建的会议信息；
+    *@Parameter
+    *@Date:18:09 2019/3/7
+    *@Package: com.example.server.controller
+    */
+    @GetMapping("/show/create")
+    public List<Conference> show(Authentication authentication){
+        return  userService.showMyCreateConference(authentication.getName());
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://输入一个用户名，返回他参加的会议信息；
+    *@Parameter
+    *@Date:18:10 2019/3/7
+    *@Package: com.example.server.controller
+    */
+    @GetMapping("show/attend")
+    public Set<Conference> showAttend(Authentication authentication){
+        return  userService.showMyAttendConference(authentication.getName());
     }
 }
 

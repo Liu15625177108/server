@@ -3,6 +3,10 @@ package com.example.server.common.sender.emailsender;
 
 
 
+
+
+import org.springframework.stereotype.Service;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -18,6 +22,7 @@ import java.util.regex.Pattern;
  * @Package com.example.remote.common.sender.emailsender
  * @Date 2018/9/13 9:45
  */
+@Service
 public class SendEmialUtil {
     public boolean sendEmail(String Title,String Text,String toEmail){
         try {
