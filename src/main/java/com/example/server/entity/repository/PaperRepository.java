@@ -11,4 +11,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @Date 2019/3/3 19:30
  */
 public interface PaperRepository extends JpaRepository<Paper,String> {
+    public Paper findOneByPaperId(String paperId);
 }

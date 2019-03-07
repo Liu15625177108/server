@@ -14,5 +14,6 @@ import java.util.List;
 public interface ConferenceService {
     public  boolean createConference(Conference conference);
     public List<Conference> findAll();
+    public  Conference findOneByConferenceId(String conferenceId);
 
 }

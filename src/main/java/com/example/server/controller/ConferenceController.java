@@ -34,5 +34,9 @@ public class ConferenceController {
                 return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR, "failure", "会议名已经存在");
             }
         }
+    @GetMapping("/all")
+    public List<Conference> showAll(){
+        return  conferenceService.findAll();
+        }
 
 }

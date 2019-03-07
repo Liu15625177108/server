@@ -25,22 +25,15 @@ public class Paper  implements Serializable {
 
     private  String conferenceId;
 
-    private String userId;
+    private String userName;
 
+    private String paperComment;
 
-    public Paper(String paperId, String paperTilte, Date paperSubmitTime, String paperFileName, String conferenceId) {
-        this.paperId = paperId;
+    public Paper(String paperTilte, String conferenceId, String userName) {
         this.paperTilte = paperTilte;
-        this.paperSubmitTime = paperSubmitTime;
-        this.paperFileName = paperFileName;
+//        this.paperFileName = paperFileName;
         this.conferenceId = conferenceId;
-    }
-
-    public Paper(String paperId, String paperTilte, Date paperSubmitTime, String paperFileName) {
-        this.paperId = paperId;
-        this.paperTilte = paperTilte;
-        this.paperSubmitTime = paperSubmitTime;
-        this.paperFileName = paperFileName;
+        this.userName = userName;
     }
 
     public Paper() {
@@ -84,5 +77,21 @@ public class Paper  implements Serializable {
 
     public void setConferenceId(String conferenceId) {
         this.conferenceId = conferenceId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPaperComment() {
+        return paperComment;
+    }
+
+    public void setPaperComment(String paperComment) {
+        this.paperComment = paperComment;
     }
 }

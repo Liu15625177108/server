@@ -1,5 +1,7 @@
 package com.example.server.entity;
 
+
+import com.fasterxml.jackson.annotation.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -31,6 +33,8 @@ public class Conference implements Serializable {
 
     private Date  date;
 
+//    @JsonBackReference
+    @JsonIgnoreProperties("conferenceSet")
    @ManyToMany(mappedBy = "conferenceSet")
     private Set<User>  userSet;
 
@@ -141,4 +145,6 @@ public class Conference implements Serializable {
     public void setContactPhone(String contactPhone) {
         this.contactPhone = contactPhone;
     }
+
+
 }

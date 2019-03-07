@@ -35,4 +35,9 @@ public class ConferenceServiceImpl implements ConferenceService {
     public List<Conference> findAll() {
             return conferenceRepository.findAll();
     }
+
+    @Override
+    public Conference findOneByConferenceId(String conferenceId) {
+        return conferenceRepository.findOneById(conferenceId);
+    }
 }

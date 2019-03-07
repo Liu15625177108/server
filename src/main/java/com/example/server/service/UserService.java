@@ -1,6 +1,10 @@
 package com.example.server.service;
 
+import com.example.server.entity.Conference;
 import com.example.server.entity.User;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @ClassName UserService
@@ -13,4 +17,6 @@ public interface UserService {
     public boolean signup(User user);
     public User  showSimple(String userName);
     public boolean attendConference(String userName,String conferenceId);
+    public List<Conference> showMyCreateConference(String userName);
+    public Set<Conference> showMyAttendConference(String userName);
 }

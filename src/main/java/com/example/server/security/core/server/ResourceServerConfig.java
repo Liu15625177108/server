@@ -57,7 +57,7 @@ public class ResourceServerConfig  extends ResourceServerConfigurerAdapter {
                 .successHandler(myAuthenticationSuccessHandle)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/error","/user/signup","/social/user","/login.html","/authentication/form","/hello","/css/**","/js/**").permitAll()
+                .antMatchers("/error","/user/signup","/social/user","/login.html","/authentication/form","/hello","/css/**","/js/**","/file/download/**").permitAll()
                 .antMatchers("/authentication/require","/code/image","/code/sms","/signout","/session/invalid","/oauth/**","/oauth/token","/conference/create").permitAll()
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                 .and()

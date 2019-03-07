@@ -1,5 +1,7 @@
 package com.example.server.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import javax.persistence.*;
@@ -43,6 +45,7 @@ public class User  implements Serializable {
     private String email;
 
     @ManyToMany
+    @JsonIgnoreProperties("userSet")
     private Set<Conference> conferenceSet;
 
     public String getId() {
@@ -102,4 +105,6 @@ public class User  implements Serializable {
 
     public User() {
     }
+
+
 }

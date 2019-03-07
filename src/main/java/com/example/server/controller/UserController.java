@@ -5,6 +5,7 @@ import com.example.server.entity.Conference;
 import com.example.server.entity.User;
 import com.example.server.service.UserService;
 import com.fasterxml.jackson.annotation.JsonView;
+import jdk.nashorn.internal.runtime.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,10 +14,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @ClassName UserController
@@ -87,8 +85,8 @@ public class UserController {
 
     }
     @GetMapping("/simpleshow")
-    @JsonView(User.simpleValue.class)
-    public User showSimple(@RequestParam(required = true,name = "username",defaultValue = "erwin")String userName){
+//    @JsonView(User.simpleValue.class)
+    public User showSimple(@RequestParam(required = true,name = "userName",defaultValue = "erwin")String userName){
         return userService.showSimple(userName);
     }
 
@@ -98,6 +96,14 @@ public class UserController {
             return new ResultInfo(HttpStatus.OK,"success","报名成功");
         }
         return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure","报名失败");
+    }
+    @GetMapping("/show/create")
+    public List<Conference> show(@RequestParam(name = "userName")String userName){
+        return  userService.showMyCreateConference(userName);
+    }
+    @GetMapping("show/attend")
+    public Set<Conference> showAttend(@RequestParam(name = "userName")String userName){
+        return  userService.showMyAttendConference(userName);
     }
 }
 
