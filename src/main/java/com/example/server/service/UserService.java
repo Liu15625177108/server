@@ -19,4 +19,6 @@ public interface UserService {
     public boolean attendConference(String userName,String conferenceId);
     public List<Conference> showMyCreateConference(String userName);
     public Set<Conference> showMyAttendConference(String userName);
+    public  boolean attendOrNot(String userName,String conferenceId);
+    public  boolean createOrNot(String userName,String conferenceId);
 }

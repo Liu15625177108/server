@@ -106,5 +106,33 @@ public class UserServiceImpl implements UserService {
         User user =userRepository.findOneByName(userName);
         return  user.getConferenceSet();
     }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://是否参加此会议，参加放回true；
+    *@Parameter
+    *@Date:13:53 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
+    @Override
+    public boolean attendOrNot(String userName, String conferenceId) {
+        User user =userRepository.findOneByName(userName);
+        for(Conference conference:user.getConferenceSet()) {
+            if (conference.getId().equals(conferenceId)) {
+                return true;
+            }
+        }
+        return  false;
+
+    }
+
+    @Override
+    public boolean createOrNot(String userName, String conferenceId) {
+        Conference conference=conferenceRepository.findOneById(conferenceId);
+        if (conference.getCreateName().equals(userName)){
+            return  true;
+        }
+        return false;
+    }
 }
 

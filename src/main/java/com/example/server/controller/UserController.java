@@ -38,13 +38,14 @@ public class UserController {
      *@Date:16:41 2018/9/10
      *@Package: com.example.remote.user
      */
-    @GetMapping("/sayhello")
-    public Map sayHello(){
-        Map map =new HashMap<String ,String>();
-//        User user=new User("aa","123456","1232","244@qq.com");
-        map.put("aa","1234");
-        return map;
-    }
+//    @GetMapping("/test")
+//    public boolean sayHello(@RequestParam("userName")String userName,@RequestParam("conferenceId")String conferenceId){
+//     return userService.attendOrNot(userName,conferenceId);
+//    }
+//    @GetMapping("/test1")
+//    public boolean sayHello1(@RequestParam("userName")String userName,@RequestParam("conferenceId")String conferenceId){
+//        return userService.createOrNot(userName,conferenceId);
+//    }
 
 
     /**
