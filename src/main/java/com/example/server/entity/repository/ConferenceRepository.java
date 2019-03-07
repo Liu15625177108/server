@@ -2,7 +2,7 @@ package com.example.server.entity.repository;
 
 import com.example.server.entity.Conference;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.redis.connection.ReactiveListCommands;
+//import org.springframework.data.redis.connection.ReactiveListCommands;
 
 import java.util.List;
 

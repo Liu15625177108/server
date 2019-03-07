@@ -46,8 +46,8 @@ public class ValidatorCodeController {
     @Autowired
     private SmsCodeSender mydefaultSmsSender;
 
-    @Autowired
-    private RedisService redisService;
+//    @Autowired
+//    private RedisService redisService;
 
     /**获取session*/
 //    private SessionStrategy sessionStrategy=new HttpSessionSessionStrategy();
@@ -80,7 +80,7 @@ public class ValidatorCodeController {
         ValidatorCode validatorCode = codeGenerator.createCode(new ServletWebRequest(httpServletRequest));
         if(type.equals("sms")){
 //            sessionStrategy.setAttribute(new ServletWebRequest(httpServletRequest),SESSION_SMS_KEY, validatorCode);
-            redisService.setKey("123456",validatorCode.getCode());
+//            redisService.setKey("123456",validatorCode.getCode());
             String phone=ServletRequestUtils.getRequiredStringParameter(httpServletRequest,"phone");
             mydefaultSmsSender.sendCode(phone,validatorCode);
         }

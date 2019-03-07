@@ -219,6 +219,8 @@
     <div class="ui tiny modal " id="loginUi">
         <div class="header">Login</div>
 
+        <!--User-->
+
         <div class="content"  ng-switch-when='user'>
             <div class="ui two column middle aligned very relaxed stackable grid">
                 <div class="column">
@@ -331,6 +333,8 @@
         });
 		$('.second.modal')
 			.modal('attach events', '#next');
+
+
         var app = angular.module('login',['ngCookies']);
         app.controller('controller',function($scope,$http,$cookies,$cookieStore){
             $scope.user=function(){
@@ -346,7 +350,7 @@
             };
 
 			$scope.funcsignup=function(){
-			//alert('signup');
+			// alert('signup');
 			//$('#loginUi').modal('hide');
 			$('#signupUi')
 				.modal('setting','transition','fly left')
@@ -357,7 +361,6 @@
             /*  manager login*/
             $scope.login=function(){
                 if($scope.myVar=='manager'){
-
 
                     var str="http://localhost:8888/authentication/form?username=erwin&password=3231433"
 
@@ -401,9 +404,7 @@
                         url:str,
 						headers:{
 
-
                         "Authorization":token
-
 						}
 						/*
 						body:{"username":"erwin",
