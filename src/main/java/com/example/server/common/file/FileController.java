@@ -23,13 +23,13 @@ public class FileController {
     @Autowired
     private PaperService paperService;
 //    String floder="D:\\20152100172\\demosecurity\\src\\main\\java\\com\\example\\demosecurity\\api\\controller\\";
-//    String floder="C:\\Users\\Administrator\\Desktop\\server\\";
-    String floder="/home/ubuntu/file/";
+    String floder="C:\\Users\\Administrator\\Desktop\\server\\";
+//    String floder="/home/ubuntu/file/";
 
     @GetMapping("/download/{id}")
     public  void downLoad(@PathVariable String id, HttpServletRequest request, HttpServletResponse response) throws IOException {
         Paper paper=paperService.findOneByPaperId(id);
-
+        System.out.println(paper.getPaperFileName());
         try (InputStream inputStream = new FileInputStream(new File(floder, id+paper.getPaperFileName()));
              OutputStream outputStream = response.getOutputStream();
         ) {
