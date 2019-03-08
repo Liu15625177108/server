@@ -53,7 +53,7 @@ public class ConferenceServiceImpl implements ConferenceService {
     /**
     *@Author Jerry.Liu
     *@Description://输出参加会议的人员。
-     **@Parameter
+    **@Parameter
     *@Date:17:49 2019/3/7
     *@Package: com.example.server.service.impl
     */

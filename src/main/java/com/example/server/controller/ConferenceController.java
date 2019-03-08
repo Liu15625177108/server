@@ -27,6 +27,8 @@ import java.util.Set;
 public class ConferenceController {
     @Autowired
     private ConferenceService conferenceService;
+
+
     @PostMapping("/create")
     public ResultInfo createConference(@RequestBody Conference conference) {
 
