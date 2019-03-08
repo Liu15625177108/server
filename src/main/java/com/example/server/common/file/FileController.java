@@ -29,11 +29,12 @@ public class FileController {
     @GetMapping("/download/{id}")
     public  void downLoad(@PathVariable String id, HttpServletRequest request, HttpServletResponse response) throws IOException {
         Paper paper=paperService.findOneByPaperId(id);
-        System.out.println(paper.getPaperFileName());
+
         try (InputStream inputStream = new FileInputStream(new File(floder, id+paper.getPaperFileName()));
              OutputStream outputStream = response.getOutputStream();
         ) {
             response.setContentType("application/x-download");
+            System.out.println(paper.getPaperFileName());
             response.addHeader("Content-Disposition","attach;filename="+paper.getPaperFileName());
             IOUtils.copy(inputStream,outputStream);
             outputStream.flush();

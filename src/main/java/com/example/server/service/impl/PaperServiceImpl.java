@@ -46,4 +46,12 @@ public class PaperServiceImpl implements PaperService {
     public List<Paper> findAllByConferenceId(String conferenceId) {
         return  paperRepository.findAllByConferenceId(conferenceId);
     }
+
+    @Override
+    public boolean addComment(Paper paper,String comment) {
+
+        paper.setPaperComment(comment);
+        paperRepository.save(paper);
+        return true;
+    }
 }

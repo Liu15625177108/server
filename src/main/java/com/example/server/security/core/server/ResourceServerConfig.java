@@ -2,6 +2,7 @@ package com.example.server.security.core.server;
 
 import com.example.server.common.filter.CorsFilterConfig;
 import com.example.server.security.MyUserDetailsService;
+import com.example.server.security.core.handle.MyAuthenticationFaiurelHandle;
 import com.example.server.security.core.handle.MyAuthenticationSuccessHandle;
 import com.example.server.security.core.smslogin.SmsAuthenticationFilterConfig;
 import com.example.server.security.core.validatorcode.smscode.filter.SmsCodeFilterConfig;
@@ -37,6 +38,8 @@ public class ResourceServerConfig  extends ResourceServerConfigurerAdapter {
     @Autowired
     private MyAuthenticationSuccessHandle myAuthenticationSuccessHandle;
     @Autowired
+    private MyAuthenticationFaiurelHandle myAuthenticationFaiurelHandle;
+    @Autowired
     private SmsCodeFilterConfig smsCodeFilterConfig;
 
     @Autowired
@@ -55,6 +58,7 @@ public class ResourceServerConfig  extends ResourceServerConfigurerAdapter {
                 .loginPage("/server.html")
                 .loginProcessingUrl("/authentication/form")
                 .successHandler(myAuthenticationSuccessHandle)
+                .failureHandler(myAuthenticationFaiurelHandle)
                 .and()
                 .authorizeRequests()
                 .antMatchers("/error","/user/signup","/social/user","/login.html","/authentication/form","/hello","/css/**","/js/**","/webjars/bootstrap/4.0.0/css/bootstrap.css","/webjars/bootstrap/4.0.0/js/bootstrap.js","/webjars/angularjs/1.7.7/angular.js").permitAll()
@@ -91,11 +95,12 @@ public class ResourceServerConfig  extends ResourceServerConfigurerAdapter {
 //        source.registerCorsConfiguration("/**", configuration);
 //        return source;
 //    }
-@Bean
+    @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider(){
          DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
          daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
           daoAuthenticationProvider.setUserDetailsService(myUserDetailsService);
+          daoAuthenticationProvider.setHideUserNotFoundExceptions(false);
          return daoAuthenticationProvider;
     }
 }

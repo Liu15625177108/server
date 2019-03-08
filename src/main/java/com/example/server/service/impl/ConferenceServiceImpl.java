@@ -5,6 +5,7 @@ import com.example.server.entity.Conference;
 import com.example.server.entity.User;
 import com.example.server.entity.repository.ConferenceRepository;
 import com.example.server.service.ConferenceService;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
