@@ -5,6 +5,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 /**
@@ -22,7 +23,8 @@ public class SmsAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         SmsAuthenticationToken smsAuthenticationToken=(SmsAuthenticationToken)authentication;
         String phone=(String)authentication.getPrincipal();
-        SmsUser userDetails = (SmsUser) smsUserDetailService.loadUserByUsername(phone);
+//        SmsUser userDetails = (SmsUser) smsUserDetailService.loadUserByUsername(phone);
+       User userDetails = (User) smsUserDetailService.loadUserByUsername(phone);
         if(userDetails==null){
             throw  new InternalAuthenticationServiceException("无法获取用户信息");
         }

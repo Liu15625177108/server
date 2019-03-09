@@ -21,8 +21,10 @@ public interface UserRepository extends JpaRepository<User,String> {
      *@Package: com.example.remote.user.entity
      */
     public User findOneByName(String name);
-
+    public User findOneByPhone(String phone);
     public boolean existsByName(String name);
+
+    public  boolean existsByPhone(String phone);
 
 
 }

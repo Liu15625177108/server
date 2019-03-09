@@ -4,6 +4,8 @@ import com.example.server.common.entity.ResultInfo;
 import com.example.server.entity.Conference;
 import com.example.server.entity.User;
 import com.example.server.service.ConferenceService;
+import com.example.server.service.UserService;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
@@ -38,9 +40,11 @@ public class ConferenceController {
                 return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR, "failure", "会议名已经存在");
             }
         }
+
     @GetMapping("/all")
-    public List<Conference> showAll(){
-        return  conferenceService.findAll();
+//    @JsonView(Conference.simpleView.class)
+    public ResultInfo showAll(){
+        return  new ResultInfo(HttpStatus.OK,"success",conferenceService.findAll());
     }
 
     /**
@@ -51,13 +55,13 @@ public class ConferenceController {
     *@Package: com.example.server.controller
     */
     @GetMapping("/users")
-    public Set<User> conferenceAttendUser(@RequestParam("conferenceId")String conferenceId){
-        return  conferenceService.attendConferenceUsers(conferenceId);
+    public ResultInfo conferenceAttendUser(@RequestParam("conferenceId")String conferenceId){
+        return  new ResultInfo(HttpStatus.OK,"success",conferenceService.attendConferenceUsers(conferenceId));
     }
 
     @GetMapping("/details")
-    public Conference conferenceDetails(@RequestParam("conferenceId") String conferenceId){
-        return  conferenceService.findOneByConferenceId(conferenceId);
+    public ResultInfo conferenceDetails(@RequestParam("conferenceId") String conferenceId){
+        return  new ResultInfo(HttpStatus.OK,"success",conferenceService.findOneByConferenceId(conferenceId));
     }
 
 

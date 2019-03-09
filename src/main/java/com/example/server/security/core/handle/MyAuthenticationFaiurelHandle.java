@@ -1,6 +1,8 @@
 package com.example.server.security.core.handle;
 
+import com.example.server.common.entity.ResultInfo;
 import com.example.server.common.logger.MyLogger;
+import com.example.server.security.core.properties.browserproperties.LoginType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
@@ -31,15 +33,15 @@ public class MyAuthenticationFaiurelHandle extends SimpleUrlAuthenticationFailur
     @Autowired
     private MyLogger myLogger;
 
-//    @Override
-//    public void onAuthenticationFailure(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AuthenticationException e) throws IOException, ServletException {
-////        myLogger.getLogger().info("登陆失败");
-//        if(securityProperties.getBrowser().getLoginType().equals(LoginType.JSON)) {
-//            httpServletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-//            httpServletResponse.setContentType("application/json;charset=UTF-8");
-//            httpServletResponse.getWriter().write(objectMapper.writeValueAsString(new SimpleResponse(e.getMessage())));
-//        }else {
-//            super.onAuthenticationFailure(httpServletRequest,httpServletResponse,e);
-//        }
-//    }
+    @Override
+    public void onAuthenticationFailure(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AuthenticationException e) throws IOException, ServletException {
+//        myLogger.getLogger().info("登陆失败");
+
+            ResultInfo resultInfo=new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure",e.getMessage());
+            httpServletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            httpServletResponse.setContentType("application/json;charset=UTF-8");
+//            httpServletResponse.getWriter().write(objectMapper.writeValueAsString((Object)e.getMessage()));
+            httpServletResponse.getWriter().write(objectMapper.writeValueAsString((Object)resultInfo));
+
+    }
 }

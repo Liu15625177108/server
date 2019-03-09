@@ -91,8 +91,8 @@ public class UserController {
     }
     @GetMapping("/simpleshow")
 //    @JsonView(User.simpleValue.class)
-    public User showSimple(Authentication authentication){
-        return userService.showSimple(authentication.getName());
+    public ResultInfo showSimple(Authentication authentication){
+        return new ResultInfo(HttpStatus.OK,"success",userService.showSimple(authentication.getName()));
     }
 /**
 *@Author Jerry.Liu
@@ -116,8 +116,8 @@ public class UserController {
     *@Package: com.example.server.controller
     */
     @GetMapping("/show/create")
-    public List<Conference> show(Authentication authentication){
-        return  userService.showMyCreateConference(authentication.getName());
+    public ResultInfo show(Authentication authentication){
+        return  new ResultInfo(HttpStatus.OK,"success",userService.showMyCreateConference(authentication.getName()));
     }
 
     /**
@@ -128,8 +128,8 @@ public class UserController {
     *@Package: com.example.server.controller
     */
     @GetMapping("show/attend")
-    public Set<Conference> showAttend(Authentication authentication){
-        return  userService.showMyAttendConference(authentication.getName());
+    public ResultInfo showAttend(Authentication authentication){
+        return  new ResultInfo(HttpStatus.OK,"success",userService.showMyAttendConference(authentication.getName()));
     }
 }
 

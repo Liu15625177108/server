@@ -19,6 +19,11 @@ import java.util.Set;
  */
 @Entity
 public class Conference implements Serializable {
+    public interface  simpleView{
+    }
+    public interface defaultView extends  simpleView{
+    }
+
 
     @javax.persistence.Id
 //    @GeneratedValue(generator = "idGenerator")
@@ -63,7 +68,7 @@ public class Conference implements Serializable {
 
     public Conference() {
     }
-
+    @JsonView(simpleView.class)
     public String getId() {
         return id;
     }
@@ -72,6 +77,7 @@ public class Conference implements Serializable {
         this.id = id;
     }
 
+    @JsonView(simpleView.class)
     public String getName() {
         return name;
     }
@@ -80,6 +86,7 @@ public class Conference implements Serializable {
         this.name = name;
     }
 
+    @JsonView(simpleView.class)
     public String getAddress() {
         return address;
     }
@@ -87,6 +94,7 @@ public class Conference implements Serializable {
     public void setAddress(String address) {
         this.address = address;
     }
+
 
     public String getDescription() {
         return description;
@@ -96,6 +104,7 @@ public class Conference implements Serializable {
         this.description = description;
     }
 
+    @JsonView(simpleView.class)
     public Date getDate() {
         return date;
     }
@@ -103,6 +112,7 @@ public class Conference implements Serializable {
     public void setDate(Date date) {
         this.date = date;
     }
+
 
     public Set<User> getUserSet() {
         return userSet;

@@ -1,5 +1,10 @@
 package com.example.server.security.core.validatorcode.basecode;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -17,6 +22,8 @@ public class ValidatorCode implements Serializable {
         private String code;
 
         /** 验证码的过期时间*/
+        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+        @JsonSerialize(using = LocalDateTimeSerializer.class)
         private LocalDateTime expireTime;
 
 

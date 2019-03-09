@@ -362,9 +362,11 @@
             $scope.login=function(){
                 if($scope.myVar=='manager'){
 
+
                     var str2="http://localhost:8080/authentication/form?username=erwin&password=3231433"
 
                     var str="http://localhost:8080/authentication/form?username=test&password=123456"
+
 
                     $http({
                         method:"post",
@@ -393,10 +395,10 @@
 							// alert("sss"+$cookieStore.get('token'))
                             window.location.href="index.html"
 
-
                         },
                         function errorCallback(response){
                             alert("error");
+                            alert(response.data.data);
                         });
                 }else{
 

@@ -1,6 +1,8 @@
 package com.example.server.controller;
 
+import com.example.server.entity.Conference;
 import com.example.server.entity.User;
+import com.example.server.service.ConferenceService;
 import com.example.server.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,9 +23,16 @@ import java.util.List;
 public class ManagerController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private ConferenceService conferenceService;
 
     @GetMapping("/showusers")
     public List<User> showall(){
         return  userService.findAll();
+    }
+
+    @GetMapping("/showconferences")
+    public List<Conference> showConference(){
+        return conferenceService.findAll();
     }
 }

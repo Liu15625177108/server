@@ -1,8 +1,11 @@
 package com.example.server.common.file;
 
 import com.example.server.entity.Paper;
+import com.example.server.entity.User;
 import com.example.server.entity.repository.PaperRepository;
+import com.example.server.service.ConferenceService;
 import com.example.server.service.PaperService;
+import com.example.server.service.UserService;
 import org.apache.tomcat.jni.FileInfo;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,22 +25,28 @@ import java.io.*;
 public class FileController {
     @Autowired
     private PaperService paperService;
-//    String floder="D:\\20152100172\\demosecurity\\src\\main\\java\\com\\example\\demosecurity\\api\\controller\\";
-//    String floder="C:\\Users\\Administrator\\Desktop\\server\\";
-    String floder="/home/ubuntu/file/";
 
-    @GetMapping("/download/{id}")
-    public  void downLoad(@PathVariable String id, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    @Autowired
+     private UserService userService;
+//    String floder="D:\\20152100172\\demosecurity\\src\\main\\java\\com\\example\\demosecurity\\api\\controller\\";
+    String floder="C:\\Users\\Administrator\\Desktop\\server\\";
+//    String floder="/home/ubuntu/file/";
+
+    @GetMapping("/download/{conferenceId}/{id}")
+    public  void downLoad(@PathVariable String id, @PathVariable String conferenceId, HttpServletRequest request, HttpServletResponse response,Authentication authentication) throws IOException {
         Paper paper=paperService.findOneByPaperId(id);
 
-        try (InputStream inputStream = new FileInputStream(new File(floder, id+paper.getPaperFileName()));
-             OutputStream outputStream = response.getOutputStream();
-        ) {
-            response.setContentType("application/x-download");
-            response.addHeader("Content-Disposition","attach;filename="+paper.getPaperFileName());
-            IOUtils.copy(inputStream,outputStream);
-            outputStream.flush();
-        }
+       if( userService.createOrNot(authentication.getName(),conferenceId)) {
+           try (InputStream inputStream = new FileInputStream(new File(floder, id + paper.getPaperFileName()));
+                OutputStream outputStream = response.getOutputStream();
+           ) {
+               response.setContentType("application/x-download");
+               System.out.println(paper.getPaperFileName());
+               response.addHeader("Content-Disposition", "attach;filename=" + new String(paper.getPaperFileName().getBytes("gb2312"), "ISO8859-1"));
+               IOUtils.copy(inputStream, outputStream);
+               outputStream.flush();
+           }
+       }
     }
     //    @PostMapping(value = "/upload",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 //    public ResponseEntity<Object> uploadFile(@RequestParam("file")MultipartFile file) throws IOException {
