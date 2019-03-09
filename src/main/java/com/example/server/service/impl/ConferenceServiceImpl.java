@@ -26,11 +26,9 @@ public class ConferenceServiceImpl implements ConferenceService {
     private IdCreator idCreator;
     @Override
     public boolean createConference(Conference conference) {
-
             conference.setId(idCreator.createId());
             conferenceRepository.save(conference);
             return  true;
-
     }
 
     /**
@@ -62,4 +60,6 @@ public class ConferenceServiceImpl implements ConferenceService {
         Conference conference= conferenceRepository.findOneById(conferenceId);
         return  conference.getUserSet();
     }
+
+
 }

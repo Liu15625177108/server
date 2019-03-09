@@ -66,7 +66,7 @@ public class UserController {
 
     /**
      *@Author Jerry.Liu
-     *@Description:用户注册接口。
+     *@Description:用户注册接口.
      *@Parameter [user]
      *@Date:16:41 2018/9/10
      *@Package: com.example.remote.user

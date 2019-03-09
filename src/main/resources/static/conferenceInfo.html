@@ -50,9 +50,13 @@
     <div role="main" class="container">
 
         <div class="row">
-            <div class="col-md-8 order-md-1">
+            <div class="col-md-8 order-md-1" ng-model="conference">
                 <h2>会议信息</h2>
-                <h5>会议名称: conference aaa</h5><h5>电子邮件: tomomm@qq.com</h5><h5>科研机构: school</h5><h5>注册时间: 2019-03-03</h5><h5>活跃度: 89</h5>
+                <h5>会议名称: {{conference.name}}</h5>
+                <h5>电子邮件: {{conference.address}}</h5>
+                <h5>科研机构: {{conference.createName}}</h5>
+                <h5>注册时间: {{conference.date}}</h5>
+                <h5>活跃度: 89</h5>
             </div>
 
 
@@ -115,17 +119,32 @@
     <!--<script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>-->
     <!--<script src="../../../../assets/js/vendor/popper.min.js"></script>-->
     <script src="/js/bootstrap.js"></script>
-
+    <script src="/webjars/angularjs/1.7.7/angular.js"></script>
     <script>
         var app=angular.module("conInfo",[]);
 
-        app.controller("conInfoCtrl",function($scope){
+        app.controller("conInfoCtrl",function($scope,$http){
+            var url = window.location.search;
+            var str = url.substr(1);
+            str='http://localhost:8080/conference/details?conferenceId='+str;
+            $http({
+                method: 'GET',
+                url: str,
+            }).then(function successCallback(response) {
+                // alert('success');
+                $scope.conference = response.data;
+
+            }, function errorCallback(response) {
+                // 请求失败执行代码
+                alert('error');
+            });
+
 
         });
 
-        function loadFile(file){
-            $("#filename").html(file.name);
-        }
+        // function loadFile(file){
+        //     $("#filename").html(file.name);
+        // }
 
     </script>
   </body>
