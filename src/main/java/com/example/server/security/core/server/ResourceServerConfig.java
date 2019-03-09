@@ -62,7 +62,8 @@ public class ResourceServerConfig  extends ResourceServerConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/error","/user/signup","/social/user","/login.html","/authentication/form","/hello","/css/**","/js/**","/webjars/bootstrap/4.0.0/css/bootstrap.css","/webjars/bootstrap/4.0.0/js/bootstrap.js","/webjars/angularjs/1.7.7/angular.js").permitAll()
-                .antMatchers("/authentication/require","/code/image","/code/sms","/signout","/session/invalid","/oauth/**","/oauth/token","/conference/create","/index.html","index","/test.html","/static/**","/","/login2.html","/**").permitAll()
+                .antMatchers("/authentication/require","/code/image","/code/sms","/signout","/session/invalid","/oauth/**","/oauth/token","/conference/create","/index.html","index","/test.html","/static/**","/","/login2.html").permitAll()
+                .antMatchers("/manager/**").hasRole("ADMIN")
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                 .and()
                 .authorizeRequests()
@@ -97,7 +98,7 @@ public class ResourceServerConfig  extends ResourceServerConfigurerAdapter {
 //    }
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider(){
-         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+         DaoAuthenticationProvider daoAuthenticationProvider = new MyDaoAuthenticationProvider();
          daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
           daoAuthenticationProvider.setUserDetailsService(myUserDetailsService);
           daoAuthenticationProvider.setHideUserNotFoundExceptions(false);

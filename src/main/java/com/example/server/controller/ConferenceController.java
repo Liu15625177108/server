@@ -40,7 +40,7 @@ public class ConferenceController {
         }
 
     @GetMapping("/all")
-    @JsonView(Conference.simpleView.class)
+//    @JsonView(Conference.simpleView.class)
     public ResultInfo showAll(){
         return  new ResultInfo(HttpStatus.OK,"success",conferenceService.findAll());
     }

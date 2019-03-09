@@ -1,6 +1,7 @@
 package com.example.server.security.core.validatorcode.smscode.filter;
 
 
+import com.example.server.common.entity.ValidatorName;
 import com.example.server.common.redis.RedisService;
 import com.example.server.security.core.handle.MyAuthenticationFaiurelHandle;
 import com.example.server.security.core.handle.MyAuthenticationSuccessHandle;
@@ -64,7 +65,7 @@ public class SmsCodeFilter extends OncePerRequestFilter implements InitializingB
      * 用于path匹配的类
      */
     private AntPathMatcher antPathMatcher = new AntPathMatcher();
-//    private RedisService redisService;
+    private RedisService redisService;
 
     /**
      * @Author Jerry.Liu
@@ -125,30 +126,31 @@ public class SmsCodeFilter extends OncePerRequestFilter implements InitializingB
         /**从session中拿到生成的验证码信息*/
 //       SmsCode smsCode = (SmsCode) httpSessionSessionStrategy.getAttribute(servletRequest,
 //                ValidatorCodeController.getSessionSmsKey());
-//        SmsCode smsCode =(SmsCode)redisService.getValue("123456");
+        SmsCode smsCode =(SmsCode)redisService.getValue(ValidatorName.getSmsKey());
 //        String smsCode=(String)redisService.getValue("123456");
-//        /** 从request中获取登陆提交表单的验证码信息*/
-//        String codeInRequest = ServletRequestUtils.getStringParameter(servletRequest.getRequest(), "smscode");
-//
-//        if (StringUtils.isBlank(codeInRequest)) {
-//            throw new ValidatorCodeException("输入验证码信息为空");
-//        }
-//        if (smsCode == null) {
-//            throw new ValidatorCodeException("验证码信息不存在");
-//        }
-//        if (smsCode==null) {
-////            httpSessionSessionStrategy.removeAttribute(servletRequest, ValidatorCodeController.getSessionImageKey());
-////            redisService.delete("code");
-//            throw new ValidatorCodeException("验证码信息已经过期");
-//        }
-////        if (!StringUtils.equals(smsCode.getCode(), codeInRequest)) {
-////            throw new ValidatorCodeException("验证码不匹配");
-////        }
-//        if(!smsCode.equals(codeInRequest)){
+        /** 从request中获取登陆提交表单的验证码信息*/
+        String codeInRequest = ServletRequestUtils.getStringParameter(servletRequest.getRequest(), "smscode");
+
+        if (StringUtils.isBlank(codeInRequest)) {
+            throw new ValidatorCodeException("输入验证码信息为空");
+        }
+        if (smsCode == null) {
+            throw new ValidatorCodeException("验证码信息不存在");
+        }
+        if (smsCode.getExpireTime().isBefore(LocalDateTime.now())) {
+//            httpSessionSessionStrategy.removeAttribute(servletRequest, ValidatorCodeController.getSessionImageKey());
+//            redisService.delete("code");
+            redisService.delete(ValidatorName.getSmsKey());
+            throw new ValidatorCodeException("验证码信息已经过期");
+        }
+        if (!StringUtils.equals(smsCode.getCode(), codeInRequest)) {
+            throw new ValidatorCodeException("验证码不匹配");
+        }
+//        if(!smsCode.getCode().equals(codeInRequest)){
 //            throw new ValidatorCodeException("验证码不匹配");
 //        }
-////        httpSessionSessionStrategy.removeAttribute(servletRequest, ValidatorCodeController.getSessionImageKey());
-//        redisService.delete("123456");
+//        httpSessionSessionStrategy.removeAttribute(servletRequest, ValidatorCodeController.getSessionImageKey());
+        redisService.delete(ValidatorName.getSmsKey());
 
     }
 
@@ -185,12 +187,12 @@ public class SmsCodeFilter extends OncePerRequestFilter implements InitializingB
     }
 
 
-//
-//    public RedisService getRedisService() {
-//        return redisService;
-//    }
-//
-//    public void setRedisService(RedisService redisService) {
-//        this.redisService = redisService;
-//    }
+
+    public RedisService getRedisService() {
+        return redisService;
+    }
+
+    public void setRedisService(RedisService redisService) {
+        this.redisService = redisService;
+    }
 }

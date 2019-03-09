@@ -27,14 +27,14 @@ public class SmsCodeFilterConfig extends SecurityConfigurerAdapter<DefaultSecuri
     @Autowired
     private SecurityProperties securityProperties;
 //
-//    @Autowired
-//    private RedisService redisService;
+    @Autowired
+    private RedisService redisService;
     @Override
     public void configure(HttpSecurity http) throws Exception {
         SmsCodeFilter smsCodeFilter =new SmsCodeFilter();
         smsCodeFilter.setMyAuthenticationFaiurelHandle(myAuthenticationFaiurelHandle);
         smsCodeFilter.setSecurityProperties(securityProperties);
-//        smsCodeFilter.setRedisService(redisService);
+        smsCodeFilter.setRedisService(redisService);
         smsCodeFilter.afterPropertiesSet();
         http.addFilterBefore(smsCodeFilter,UsernamePasswordAuthenticationFilter.class);
     }

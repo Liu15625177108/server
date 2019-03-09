@@ -1,6 +1,7 @@
 package com.example.server.security.core.validatorcode;
 
 
+import com.example.server.common.entity.ValidatorName;
 import com.example.server.common.redis.RedisService;
 import com.example.server.security.core.validatorcode.basecode.CodeGenerator;
 import com.example.server.security.core.validatorcode.basecode.ValidatorCode;
@@ -46,16 +47,16 @@ public class ValidatorCodeController {
     @Autowired
     private SmsCodeSender mydefaultSmsSender;
 
-//    @Autowired
-//    private RedisService redisService;
+    @Autowired
+    private RedisService redisService;
 
     /**获取session*/
 //    private SessionStrategy sessionStrategy=new HttpSessionSessionStrategy();
 
-    private  static  final String SESSION_IMAGE_KEY="SESSION_KEY_IMAGE_CODE";
-
-    private  static  final String SESSION_SMS_KEY="SESSION_KEY_SMS_CODE";
-    private  static  final String SESSION_KEY="SESSION_KEY_CODE";
+//    private  static  final String SESSION_IMAGE_KEY="SESSION_KEY_IMAGE_CODE";
+//
+//    private  static  final String SESSION_SMS_KEY="SESSION_KEY_SMS_CODE";
+//    private  static  final String SESSION_KEY="SESSION_KEY_CODE";
 
 //    @GetMapping("/code/image")
 //    public  void createCode(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException {
@@ -74,13 +75,14 @@ public class ValidatorCodeController {
 //        mydefaultSmsSender.sendCode(phone,smsCode);
 //    }
 
-    @GetMapping("/code/{type}")
-    public  void createCode(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, @PathVariable String type) throws IOException, ServletRequestBindingException {
+    @GetMapping("/code/{type}/{deviceId}")
+    public  void createCode(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, @PathVariable String type,@PathVariable String deviceId) throws IOException, ServletRequestBindingException {
         CodeGenerator codeGenerator = map.get(type+"CodeGenerator");
         ValidatorCode validatorCode = codeGenerator.createCode(new ServletWebRequest(httpServletRequest));
         if(type.equals("sms")){
 //            sessionStrategy.setAttribute(new ServletWebRequest(httpServletRequest),SESSION_SMS_KEY, validatorCode);
-//            redisService.setKey("123456",validatorCode.getCode());
+            ValidatorName.setSmsKey(deviceId);
+            redisService.setKey(deviceId,validatorCode);
             String phone=ServletRequestUtils.getRequiredStringParameter(httpServletRequest,"phone");
             mydefaultSmsSender.sendCode(phone,validatorCode);
         }
@@ -105,15 +107,15 @@ public class ValidatorCodeController {
 //        this.sessionStrategy = sessionStrategy;
 //    }
 
-    public static String getSessionImageKey() {
-        return SESSION_IMAGE_KEY;
-    }
-
-    public static String getSessionSmsKey() {
-        return SESSION_SMS_KEY;
-    }
-
-    public static String getSessionKey() {
-        return SESSION_KEY;
-    }
+//    public static String getSessionImageKey() {
+//        return SESSION_IMAGE_KEY;
+//    }
+//
+//    public static String getSessionSmsKey() {
+//        return SESSION_SMS_KEY;
+//    }
+//
+//    public static String getSessionKey() {
+//        return SESSION_KEY;
+//    }
 }

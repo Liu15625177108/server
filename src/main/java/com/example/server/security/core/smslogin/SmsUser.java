@@ -1,5 +1,6 @@
 package com.example.server.security.core.smslogin;
 
+import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -13,7 +14,7 @@ import java.util.List;
  * @Package com.example.server.security.core.smslogin
  * @Date 2019/2/28 15:55
  */
-public class SmsUser implements UserDetails {
+public class SmsUser implements UserDetails ,CredentialsContainer {
 
     private String phone;
 
@@ -73,5 +74,10 @@ public class SmsUser implements UserDetails {
     @Override
     public boolean isEnabled() {
         return false;
+    }
+
+    @Override
+    public void eraseCredentials() {
+
     }
 }
