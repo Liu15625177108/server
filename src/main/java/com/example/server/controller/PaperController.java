@@ -56,6 +56,13 @@ public class PaperController {
     }
 
 
+    //返回所有论文信息
+    @GetMapping("/all")
+    public ResultInfo findAll(Authentication authentication){
+        return new ResultInfo(HttpStatus.OK,"success,",paperService.findAll());
+    }
+
+
 
     @PostMapping("/addComment")
     public  ResultInfo addComment(Authentication authentication,@RequestParam("paperId")String paperId,@RequestParam("comment")String comment){

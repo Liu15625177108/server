@@ -17,4 +17,8 @@ public interface PaperService {
     public List<Paper> findAllByUserName(String userName);
     public  List<Paper> findAllByConferenceId(String conferenceId);
     public  boolean addComment(Paper paper,String comment);
+    public  boolean exitByConferenceAndUserName(String conferenceId, String userName);
+    public List<Paper> findAll();
+    public Paper findOneByConferenceIdAndUserName(String conferenceId,String userName);
+    public  Paper save(Paper paper);
 }

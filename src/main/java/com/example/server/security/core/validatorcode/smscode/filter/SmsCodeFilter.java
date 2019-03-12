@@ -78,7 +78,7 @@ public class SmsCodeFilter extends OncePerRequestFilter implements InitializingB
     public void afterPropertiesSet() throws ServletException {
         super.afterPropertiesSet();
         if (securityProperties.getValidatorProperties().getSmsCodeProperties().getUrl() != null) {
-            String[] configUrls = StringUtils.splitByWholeSeparatorPreserveAllTokens(securityProperties.getValidatorProperties().getImageCodeProperties().getUrl(), ",");
+            String[] configUrls = StringUtils.splitByWholeSeparatorPreserveAllTokens(securityProperties.getValidatorProperties().getSmsCodeProperties().getUrl(), ",");
             for (String url : configUrls) {
                 urls.add(url);
             }
@@ -93,7 +93,11 @@ public class SmsCodeFilter extends OncePerRequestFilter implements InitializingB
 //                    &&StringUtils.endsWithIgnoreCase(httpServletRequest.getMethod(),"post")){
 
         /**判断值，如果为true 则url需要验证码验证*/
+        if(httpServletRequest.getMethod().equals("OPTIONS")){
+            filterChain.doFilter(httpServletRequest, httpServletResponse);
+            return;
 
+        }
         boolean action = false;
         for (String url : urls) {
             if (antPathMatcher.match(url, httpServletRequest.getRequestURI())) {
@@ -135,6 +139,7 @@ public class SmsCodeFilter extends OncePerRequestFilter implements InitializingB
             throw new ValidatorCodeException("输入验证码信息为空");
         }
         if (smsCode == null) {
+            System.out.println("验证码信息不存在");
             throw new ValidatorCodeException("验证码信息不存在");
         }
         if (smsCode.getExpireTime().isBefore(LocalDateTime.now())) {
@@ -143,14 +148,19 @@ public class SmsCodeFilter extends OncePerRequestFilter implements InitializingB
             redisService.delete(ValidatorName.getSmsKey());
             throw new ValidatorCodeException("验证码信息已经过期");
         }
-        if (!StringUtils.equals(smsCode.getCode(), codeInRequest)) {
+        if (StringUtils.equals(smsCode.getCode(), codeInRequest)) {
+            redisService.delete(ValidatorName.getSmsKey());
+
+        }
+        else {
+//            System.out.println("验证码不匹配");
             throw new ValidatorCodeException("验证码不匹配");
         }
 //        if(!smsCode.getCode().equals(codeInRequest)){
 //            throw new ValidatorCodeException("验证码不匹配");
 //        }
 //        httpSessionSessionStrategy.removeAttribute(servletRequest, ValidatorCodeController.getSessionImageKey());
-        redisService.delete(ValidatorName.getSmsKey());
+
 
     }
 

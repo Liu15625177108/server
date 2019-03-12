@@ -5,6 +5,7 @@ import com.example.server.entity.Paper;
 import com.example.server.entity.repository.PaperRepository;
 import com.example.server.service.PaperService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -25,9 +26,10 @@ public class PaperServiceImpl implements PaperService {
     private IdCreator idCreator;
     @Override
     public boolean create(Paper paper) {
-            paper.setPaperId(idCreator.createId());
-            paper.setPaperSubmitTime(new Date());
-            paperRepository.save(paper);
+
+        paper.setPaperId(idCreator.createId());
+//        paper.setPaperSubmitTime(new Date());
+//            paperRepository.save(paper);
             return  true;
     }
 
@@ -53,5 +55,25 @@ public class PaperServiceImpl implements PaperService {
         paper.setPaperComment(comment);
         paperRepository.save(paper);
         return true;
+    }
+
+    @Override
+    public boolean exitByConferenceAndUserName(String conferenceId, String userName) {
+        return  paperRepository.existsByConferenceIdAndUserName(conferenceId,userName);
+    }
+
+    @Override
+    public List<Paper> findAll(){
+        return paperRepository.findAll();
+    }
+
+    @Override
+    public Paper findOneByConferenceIdAndUserName(String conferenceId,String userName) {
+        return  paperRepository.findOneByConferenceIdAndUserName(conferenceId,userName);
+    }
+
+    @Override
+    public Paper save(Paper paper) {
+        return  paperRepository.save(paper);
     }
 }

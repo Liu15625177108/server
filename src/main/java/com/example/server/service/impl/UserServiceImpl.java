@@ -43,6 +43,7 @@ public class UserServiceImpl implements UserService {
     public boolean signup( User user) {
         if(userRepository.findOneByName(user.getName())==null) {
             user.setId(idCreator.createId());
+            user.setRole("user");
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
             return true;
@@ -78,6 +79,21 @@ public class UserServiceImpl implements UserService {
             user.getConferenceSet().add(conference);
             userRepository.save(user);
             return  true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean quitConference(String userName, String conferenceId) {
+        if(userRepository.existsByName(userName)&&conferenceRepository.existsById(conferenceId)){
+            if (attendOrNot(userName,conferenceId)) {
+                User user = userRepository.findOneByName(userName);
+                Conference conference = conferenceRepository.findOneById(conferenceId);
+//            user.getConferenceSet().add(conference);
+                user.getConferenceSet().remove(conference);
+                userRepository.save(user);
+                return true;
+            }
         }
         return false;
     }

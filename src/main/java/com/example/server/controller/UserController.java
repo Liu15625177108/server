@@ -103,10 +103,22 @@ public class UserController {
 */
     @PostMapping("/attend")
     public ResultInfo attendConference(Authentication authentication,@RequestParam("conferenceId")String conferenceId){
+
         if(userService.attendConference(authentication.getName(),conferenceId)){
             return new ResultInfo(HttpStatus.OK,"success","报名成功");
         }
         return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure","报名失败");
+    }
+
+
+
+    @PostMapping("/quit")
+    public ResultInfo quitConference(Authentication authentication,@RequestParam("conferenceId")String conferenceId){
+
+        if(userService.quitConference(authentication.getName(),conferenceId)){
+            return new ResultInfo(HttpStatus.OK,"success","退出成功");
+        }
+        return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure","退出失败");
     }
     /**
     *@Author Jerry.Liu
@@ -130,6 +142,23 @@ public class UserController {
     @GetMapping("show/attend")
     public ResultInfo showAttend(Authentication authentication){
         return  new ResultInfo(HttpStatus.OK,"success",userService.showMyAttendConference(authentication.getName()));
+    }
+
+    @GetMapping("show/isAttend")
+    public boolean showIsAttendConf(@RequestParam("conferenceId") String conferenceId,Authentication authentication){
+        Set<Conference> conferenceSet = userService.showMyAttendConference(authentication.getName());
+        for(Conference it:conferenceSet){
+            if(it.getId().equals(conferenceId)){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @GetMapping("show/isCreate")
+    public ResultInfo showIsCreateConf(Authentication authentication, @RequestParam("conferenceId") String conferenceId){
+        return new ResultInfo(HttpStatus.OK,"succcess",userService.createOrNot(authentication.getName(),conferenceId));
     }
 }
 

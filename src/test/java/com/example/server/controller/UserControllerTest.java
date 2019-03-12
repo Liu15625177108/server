@@ -46,7 +46,7 @@ public class UserControllerTest {
 
     @Test
     public void signup() throws Exception {
-        User user = new User("cai", "123456", "13322989131", "tomomm@qq.com");
+        User user = new User("caicai123456", "123456", "13322989131", "tomomm@qq.com");
         String result = mvc.perform(post("/user/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(user)))

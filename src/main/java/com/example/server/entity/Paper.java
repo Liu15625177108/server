@@ -1,6 +1,11 @@
 package com.example.server.entity;
 
+import com.example.server.common.uuid.IdCreator;
+import org.hibernate.annotations.GenericGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.Date;
@@ -14,8 +19,12 @@ import java.util.Date;
  */
 @Entity
 public class Paper  implements Serializable {
+
     @Id
+//    @GenericGenerator(name = "jpa-uuid",strategy = "uuid")
+//    @GeneratedValue(generator ="jpa-uuid")
     private String paperId;
+
 
     private String paperTilte;
 
@@ -34,6 +43,7 @@ public class Paper  implements Serializable {
 //        this.paperFileName = paperFileName;
         this.conferenceId = conferenceId;
         this.userName = userName;
+        this.paperSubmitTime=new Date();
     }
 
     public Paper() {
