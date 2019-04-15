@@ -7,19 +7,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-@RestController
+@Controller
 public class HomePageController {
 
     @Autowired
-    private UserRepository userRepository;
-  @GetMapping("/loginBuf")
-    public ResultInfo login(Authentication authentication){
-      User user=userRepository.findOneByName(authentication.getName());
-      return new ResultInfo(HttpStatus.OK,"success",user);
+    UserRepository userRepository;
 
-  }
+//    @RequestMapping("/")
+//    public String home(){
+//        return "/index.html";
+//    }
+
+    @ResponseBody
+    @GetMapping("/loginBuf")
+    public ResultInfo loginBuf(Authentication authentication){
+        User user = userRepository.findOneByName(authentication.getName());
+        return new ResultInfo(HttpStatus.OK,"success",user);
+    }
 }

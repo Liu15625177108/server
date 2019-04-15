@@ -14,6 +14,7 @@ import java.util.List;
 public interface PaperService {
     public boolean create(Paper paper);
     public Paper findOneByPaperId(String paperId);
+
     public List<Paper> findAllByUserName(String userName);
     public  List<Paper> findAllByConferenceId(String conferenceId);
     public  boolean addComment(Paper paper,String comment);
@@ -21,4 +22,8 @@ public interface PaperService {
     public List<Paper> findAll();
     public Paper findOneByConferenceIdAndUserName(String conferenceId,String userName);
     public  Paper save(Paper paper);
+
+
+    public void deletePaper(String paperId);
+    public void deleteAllByConferenceId(String conferenceId);
 }

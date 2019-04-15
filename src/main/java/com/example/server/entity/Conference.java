@@ -6,6 +6,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
@@ -31,6 +32,7 @@ public class Conference implements Serializable {
 //    @GenericGenerator(name = "idGenerator", strategy = "uuid")
     private String id;
 
+    @NotBlank(message = "姓名不能为空")
     private String name;
 
     private String address;
@@ -50,8 +52,9 @@ public class Conference implements Serializable {
     /**会议联系人信息*/
     private String  contactName;
 
-    @Email
+    @Email(message = "不合法的邮箱")
     private  String contactEmail;
+
 
     private String contactPhone;
 

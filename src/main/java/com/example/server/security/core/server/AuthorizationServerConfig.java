@@ -36,13 +36,15 @@ public class AuthorizationServerConfig  extends  AuthorizationServerConfigurerAd
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory().withClient("client")
+//                .redirectUris("http://example.com")
                 .secret(passwordEncoder.encode("123456"))
                 .authorizedGrantTypes("password", "refresh_token","authorization_code")
                 .accessTokenValiditySeconds(3600)
                 .scopes("app")
                 .and()
-                .withClient("client1")
-                .secret("123456")
+                .withClient("tomomm")
+                .redirectUris("http://example.com")
+                .secret(passwordEncoder.encode("123456"))
                 .authorizedGrantTypes("refresh_token","authorization_code")
                 .scopes("all");
     }

@@ -39,18 +39,28 @@ public class UserServiceImpl implements UserService {
     *@Date:9:57 2019/3/7
     *@Package: com.example.server.service.impl
     */
+//    @Override
+//    public boolean signup( User user) {
+//        if(userRepository.findOneByName(user.getName())==null) {
+//            user.setId(idCreator.createId());
+//            user.setRole("user");
+//            user.setPassword(passwordEncoder.encode(user.getPassword()));
+//            userRepository.save(user);
+//            return true;
+//        }
+//        else  {
+//            return false;
+//        }
+//    }
+
+
     @Override
-    public boolean signup( User user) {
-        if(userRepository.findOneByName(user.getName())==null) {
+    public boolean signup(User user) {
             user.setId(idCreator.createId());
             user.setRole("user");
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
             return true;
-        }
-        else  {
-            return false;
-        }
     }
 
     /**
@@ -82,6 +92,7 @@ public class UserServiceImpl implements UserService {
         }
         return false;
     }
+
 
     @Override
     public boolean quitConference(String userName, String conferenceId) {
@@ -161,6 +172,53 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> findAll() {
         return userRepository.findAll();
+    }
+
+    @Override
+    public boolean modifyPassword(String userName, String oldPassword, String newPassword) {
+        User user = userRepository.findOneByName(userName);
+        if(passwordEncoder.matches(oldPassword,user.getPassword())){
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean changePassword(String phone, String newPassword) {
+        User user = userRepository.findOneByPhone(phone);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return true;
+    }
+
+    @Override
+    public boolean checkPhoneAndSmscode(String phone) {
+        User user = userRepository.findOneByPhone(phone);
+//        System.out.println(user.getName());
+        if(user !=null){
+//            System.out.println(user.getName());
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public List<User> findAllUsers() {
+        return userRepository.findAllByRoleIs("user");
+    }
+
+    @Override
+    public boolean deleteUser(String username) {
+        User user = userRepository.findOneByName(username);
+        try {
+            userRepository.delete(user);
+        }
+        catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 }
 

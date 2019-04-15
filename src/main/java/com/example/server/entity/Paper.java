@@ -34,19 +34,30 @@ public class Paper  implements Serializable {
 
     private  String conferenceId;
 
+    private String conferenceName;
+
     private String userName;
 
     private String paperComment;
 
-    public Paper(String paperTilte, String conferenceId, String userName) {
+    public Paper(String paperTilte, String conferenceId, String userName,String conferenceName) {
         this.paperTilte = paperTilte;
 //        this.paperFileName = paperFileName;
         this.conferenceId = conferenceId;
         this.userName = userName;
+        this.conferenceName = conferenceName;
         this.paperSubmitTime=new Date();
     }
 
     public Paper() {
+    }
+
+    public String getConferenceName() {
+        return conferenceName;
+    }
+
+    public void setConferenceName(String conferenceName) {
+        this.conferenceName = conferenceName;
     }
 
     public String getPaperId() {

@@ -15,6 +15,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.*;
 
@@ -72,7 +73,7 @@ public class UserController {
      *@Package: com.example.remote.user
      */
     @PostMapping("/signup")
-    public ResultInfo signup(@Valid @RequestBody User user, BindingResult bindingResult ){
+    public ResultInfo signup(@Valid @RequestBody User user, BindingResult bindingResult){
                 if (bindingResult.hasErrors()){
                     List<String> list=new ArrayList<>();
                     for(ObjectError objectError:bindingResult.getAllErrors()){
@@ -87,13 +88,32 @@ public class UserController {
             }
         }
 
-
     }
+
+    @PostMapping("checkPhone")
+    public ResultInfo checkPhone(@RequestBody Map<String,String> phoneKey){
+//        if (bindingResult.hasErrors()){
+//            List<String> list=new ArrayList<>();
+//            for(ObjectError objectError:bindingResult.getAllErrors()){
+//                list.add(objectError.getDefaultMessage());
+//            }
+//            return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure",list);
+//        }else {
+            if(userService.checkPhoneAndSmscode(phoneKey.get("phone"))){
+                return new ResultInfo(HttpStatus.OK,"success","电话号码正确");
+            }else {
+                return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure","电话号码错误");
+            }
+//        }
+    }
+
+
     @GetMapping("/simpleshow")
 //    @JsonView(User.simpleValue.class)
     public ResultInfo showSimple(Authentication authentication){
         return new ResultInfo(HttpStatus.OK,"success",userService.showSimple(authentication.getName()));
     }
+
 /**
 *@Author Jerry.Liu
 *@Description://输入用户名以及会议id,返回报名结果。
@@ -132,6 +152,7 @@ public class UserController {
         return  new ResultInfo(HttpStatus.OK,"success",userService.showMyCreateConference(authentication.getName()));
     }
 
+
     /**
     *@Author Jerry.Liu
     *@Description://输入一个用户名，返回他参加的会议信息；
@@ -139,12 +160,12 @@ public class UserController {
     *@Date:18:10 2019/3/7
     *@Package: com.example.server.controller
     */
-    @GetMapping("show/attend")
+    @GetMapping("/show/attend")
     public ResultInfo showAttend(Authentication authentication){
         return  new ResultInfo(HttpStatus.OK,"success",userService.showMyAttendConference(authentication.getName()));
     }
 
-    @GetMapping("show/isAttend")
+    @GetMapping("/show/isAttend")
     public boolean showIsAttendConf(@RequestParam("conferenceId") String conferenceId,Authentication authentication){
         Set<Conference> conferenceSet = userService.showMyAttendConference(authentication.getName());
         for(Conference it:conferenceSet){
@@ -156,9 +177,33 @@ public class UserController {
         return false;
     }
 
-    @GetMapping("show/isCreate")
+    @GetMapping("/show/isCreate")
     public ResultInfo showIsCreateConf(Authentication authentication, @RequestParam("conferenceId") String conferenceId){
         return new ResultInfo(HttpStatus.OK,"succcess",userService.createOrNot(authentication.getName(),conferenceId));
     }
+
+//    @PostMapping("modPass")
+//    public ResultInfo modifyPassword(Authentication authentication,@RequestParam("oldPassword") String oldPassword,@RequestParam("newPassword") String newPassword){
+//
+//        return new ResultInfo(HttpStatus.OK,"success", userService.modifyPassword(authentication.getName(),oldPassword,newPassword));
+//    }
+    @PostMapping("/modPass")
+    public ResultInfo modifyPassword(Authentication authentication, HttpServletRequest httpServletRequest){
+        return new ResultInfo(HttpStatus.OK,"success", userService.modifyPassword(authentication.getName(),httpServletRequest.getParameter("oldPassword"),
+                httpServletRequest.getParameter("newPassword")));
+    }
+
+//    @PostMapping("/changePassword")
+//    public  ResultInfo changePassword(@RequestParam("newPassword") String newPassword,@RequestParam("phone") String phone){
+//
+//        return new ResultInfo(HttpStatus.OK,"success",userService.changePassword(phone,newPassword));
+//
+//    }
+@PostMapping("/changePassword")
+public  ResultInfo changePassword(HttpServletRequest httpServletRequest){
+
+    return new ResultInfo(HttpStatus.OK,"success",userService.changePassword(httpServletRequest.getParameter("phone"),httpServletRequest.getParameter("newPassword")));
+
+}
 }
 

@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
+
 /**
  * @ClassName UserRepository
  * @Author:Jerry.Liu;
@@ -22,9 +24,15 @@ public interface UserRepository extends JpaRepository<User,String> {
      */
     public User findOneByName(String name);
     public User findOneByPhone(String phone);
+    public List<User> findAllByRoleIs(String role);
     public boolean existsByName(String name);
 
     public  boolean existsByPhone(String phone);
+    public  boolean existsByEmail(String email);
+    public boolean deleteUserByName(String name);
+
+
+
 
 
 }

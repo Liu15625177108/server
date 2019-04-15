@@ -34,11 +34,11 @@ public class FileController {
      private UserService userService;
 //    String floder="D:\\20152100172\\demosecurity\\src\\main\\java\\com\\example\\demosecurity\\api\\controller\\";
 //    String floder="C:\\Users\\Administrator\\Desktop\\server\\";
-    String floder="/home/ubuntu/file/";
-//    String floder="D:\\test\\";
+//    String floder="/home/ubuntu/file/";
+    String floder="D:\\test\\";
 
     @GetMapping("/download/{id}")
-    public  void downLoad(@PathVariable String id, @RequestParam(name = "conferenceId",required = false) String conferenceId,@RequestParam(name = "username")String userName, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public  void downLoad(@PathVariable String id, @RequestParam(name = "conferenceId",required = false) String conferenceId,Authentication authentication, HttpServletRequest request, HttpServletResponse response) throws IOException {
         Paper paper=paperService.findOneByPaperId(id);
        response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
 //       response.addHeader("Content-Disposition",new String(paper.getPaperFileName().getBytes("GBK"),"ISO-8859-1"));
@@ -48,7 +48,7 @@ public class FileController {
 //        response.setCharacterEncoding("UTF-8");
 
 //
-        if(conferenceId==null&&paper.getUserName().equals(userName)){
+        if(conferenceId==null&&paper.getUserName().equals(authentication.getName())){
             try (InputStream inputStream = new FileInputStream(new File(floder, id + paper.getPaperFileName()));
                  OutputStream outputStream = response.getOutputStream();
             ) {
@@ -61,7 +61,7 @@ public class FileController {
 
         }
         else
-       if( userService.createOrNot(userName,conferenceId)&&paper.getConferenceId().equals(conferenceId)) {
+       if( userService.createOrNot(authentication.getName(),conferenceId)&&paper.getConferenceId().equals(conferenceId)) {
            try (InputStream inputStream = new FileInputStream(new File(floder, id + paper.getPaperFileName()));
                 OutputStream outputStream = response.getOutputStream();
            ) {
@@ -87,12 +87,13 @@ public class FileController {
 //    }
     @PostMapping(value = "/upload",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResultInfo uploadFile(@RequestParam("file")MultipartFile file, @RequestParam("paperTitle")String paperTitle,
-                                 @RequestParam("conferenceId")String conferenceId, Authentication authentication) throws IOException {
+                                 @RequestParam("conferenceId")String conferenceId,@RequestParam("conferenceName")String conferenceName, Authentication authentication) throws IOException {
 //        Paper paper=new Paper(file.getOriginalFilename());
             if(userService.attendOrNot(authentication.getName(),conferenceId)) {
                 if (paperService.exitByConferenceAndUserName(conferenceId,authentication.getName())){
                     Paper paper=paperService.findOneByConferenceIdAndUserName(conferenceId,authentication.getName());
                     paper.setPaperTilte(paperTitle);
+                    paper.setConferenceName(conferenceName);
                     File oldFile = new File(floder+paper.getPaperId()+paper.getPaperFileName());
                     File convertFile = new File(floder +paper.getPaperId()+ file.getOriginalFilename());
 
@@ -108,20 +109,20 @@ public class FileController {
                     paperService.save(paper);
                 }
                 else{
-                    Paper paper=new Paper(paperTitle,conferenceId,authentication.getName());
+                    Paper paper=new Paper(paperTitle,conferenceId,authentication.getName(),conferenceName);
                     paperService.create(paper);
-                    System.out.println(paper.getPaperId());
+//                    System.out.println(paper.getPaperId());
                     paper.setPaperFileName(file.getOriginalFilename());
                     File convertFile = new File(floder +paper.getPaperId()+ file.getOriginalFilename());
-                    System.out.println(paper.getPaperId());
+//                    System.out.println(paper.getPaperId());
                     convertFile.createNewFile();
                     FileOutputStream fileOutputStream = new FileOutputStream(convertFile);
                     fileOutputStream.write(file.getBytes());
                     fileOutputStream.close();
 
-                    System.out.println(paper.getPaperId());
+//                    System.out.println(paper.getPaperId());
                     paperService.save(paper);
-                    System.out.println(paper.getPaperId());
+//                    System.out.println(paper.getPaperId());
                 }
                 return new ResultInfo(HttpStatus.OK,"file is upload sucessfully", true);
 

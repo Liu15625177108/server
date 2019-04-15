@@ -130,13 +130,10 @@ public class SmsCodeFilter extends OncePerRequestFilter implements InitializingB
         /**从session中拿到生成的验证码信息*/
 //       SmsCode smsCode = (SmsCode) httpSessionSessionStrategy.getAttribute(servletRequest,
 //                ValidatorCodeController.getSessionSmsKey());
-
+        SmsCode smsCode =(SmsCode)redisService.getValue(ValidatorName.getSmsKey());
 //        String smsCode=(String)redisService.getValue("123456");
         /** 从request中获取登陆提交表单的验证码信息*/
         String codeInRequest = ServletRequestUtils.getStringParameter(servletRequest.getRequest(), "smscode");
-        String deviceId=ServletRequestUtils.getStringParameter(servletRequest.getRequest(),"deviceId");
-//        SmsCode smsCode =(SmsCode)redisService.getValue(ValidatorName.getSmsKey());
-        SmsCode smsCode=(SmsCode)redisService.getValue(deviceId);
 
         if (StringUtils.isBlank(codeInRequest)) {
             throw new ValidatorCodeException("输入验证码信息为空");
@@ -148,8 +145,7 @@ public class SmsCodeFilter extends OncePerRequestFilter implements InitializingB
         if (smsCode.getExpireTime().isBefore(LocalDateTime.now())) {
 //            httpSessionSessionStrategy.removeAttribute(servletRequest, ValidatorCodeController.getSessionImageKey());
 //            redisService.delete("code");
-//            redisService.delete(ValidatorName.getSmsKey());
-            redisService.delete(deviceId);
+            redisService.delete(ValidatorName.getSmsKey());
             throw new ValidatorCodeException("验证码信息已经过期");
         }
         if (StringUtils.equals(smsCode.getCode(), codeInRequest)) {

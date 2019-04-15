@@ -1,5 +1,8 @@
 package com.example.server.entity;
 
+import com.example.server.common.validation.EmailOnly;
+import com.example.server.common.validation.NameOnly;
+import com.example.server.common.validation.PhoneOnly;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -33,15 +36,18 @@ public class User  implements Serializable {
 
     private String id;
     @Id
-    @NotBlank
+    @NotBlank(message = "用户名不能为空")
+    @NameOnly
     private String name;
 
-    @NotBlank
+    @NotBlank(message = "密码不能为空")
     private String password;
 
+    @PhoneOnly
     private String phone;
 
     @Email
+    @EmailOnly
     private String email;
 
     private  String role;
@@ -73,8 +79,6 @@ public class User  implements Serializable {
     public void setPassword(String password) {
         this.password = password;
     }
-
-
 
     public String getEmail() {
         return email;
