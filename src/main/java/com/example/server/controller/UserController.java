@@ -84,7 +84,7 @@ public class UserController {
             if(userService.signup(user)){
                 return new ResultInfo(HttpStatus.OK,"success",user);
             }else {
-                return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure","用户名已经存在");
+                return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"用户名已经存在","用户名已经存在");
             }
         }
 
