@@ -76,4 +76,15 @@ public class PaperServiceImpl implements PaperService {
     public Paper save(Paper paper) {
         return  paperRepository.save(paper);
     }
+
+    @Override
+    public void deletePaper(String paperId) {
+        paperRepository.deletePaperByPaperId(paperId);
+    }
+
+    @Override
+    public void deleteAllByConferenceId(String conferenceId) {
+
+        paperRepository.deleteAllByConferenceId(conferenceId);
+    }
 }

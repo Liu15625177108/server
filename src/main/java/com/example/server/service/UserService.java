@@ -23,4 +23,9 @@ public interface UserService {
     public  boolean attendOrNot(String userName,String conferenceId);
     public  boolean createOrNot(String userName,String conferenceId);
     public  List<User> findAll();
+    public boolean modifyPassword(String userName,String oldPassword,String newPassword);
+    public boolean changePassword(String phone,String newPassword);
+    public boolean checkPhoneAndSmscode(String phone);
+    public List<User> findAllUsers();
+    public boolean deleteUser(String username);
 }

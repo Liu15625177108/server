@@ -27,9 +27,26 @@ public class ConferenceServiceImpl implements ConferenceService {
     private IdCreator idCreator;
     @Override
     public boolean createConference(Conference conference) {
+
             conference.setId(idCreator.createId());
             conferenceRepository.save(conference);
             return  true;
+    }
+
+    @Override
+    public boolean modifyConference(Conference modConference,String conferenceId) {
+
+        Conference conference = conferenceRepository.findOneById(conferenceId);
+        conference.setName(modConference.getName());
+        conference.setAddress(modConference.getAddress());
+
+        conference.setContactEmail(modConference.getContactEmail());
+        conference.setContactName(modConference.getContactName());
+        conference.setContactPhone(modConference.getContactPhone());
+        conference.setDescription(modConference.getDescription());
+        conferenceRepository.save(conference);
+
+        return true;
     }
 
     /**
@@ -62,5 +79,8 @@ public class ConferenceServiceImpl implements ConferenceService {
         return  conference.getUserSet();
     }
 
-
+    @Override
+    public void deleteConference(String conferencdId) {
+        conferenceRepository.deleteConferenceById(conferencdId);
+    }
 }

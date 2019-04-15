@@ -162,5 +162,52 @@ public class UserServiceImpl implements UserService {
     public List<User> findAll() {
         return userRepository.findAll();
     }
+
+    @Override
+    public boolean modifyPassword(String userName, String oldPassword, String newPassword) {
+        User user = userRepository.findOneByName(userName);
+        if(passwordEncoder.matches(oldPassword,user.getPassword())){
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean changePassword(String phone, String newPassword) {
+        User user = userRepository.findOneByPhone(phone);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return true;
+    }
+
+    @Override
+    public boolean checkPhoneAndSmscode(String phone) {
+        User user = userRepository.findOneByPhone(phone);
+//        System.out.println(user.getName());
+        if(user !=null){
+//            System.out.println(user.getName());
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public List<User> findAllUsers() {
+        return userRepository.findAllByRoleIs("user");
+    }
+
+    @Override
+    public boolean deleteUser(String username) {
+        User user = userRepository.findOneByName(username);
+        try {
+            userRepository.delete(user);
+        }
+        catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
 }
 

@@ -20,6 +20,7 @@ public class MyDaoAuthenticationProvider extends DaoAuthenticationProvider {
     public MyDaoAuthenticationProvider() {
     }
 
+
     @Override
     protected void additionalAuthenticationChecks(UserDetails userDetails,
                                                   UsernamePasswordAuthenticationToken authentication)
@@ -42,4 +43,5 @@ public class MyDaoAuthenticationProvider extends DaoAuthenticationProvider {
                     "密码输入错误"));
         }
     }
+
 }

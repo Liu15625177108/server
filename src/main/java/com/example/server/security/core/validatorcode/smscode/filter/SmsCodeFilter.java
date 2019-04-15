@@ -2,6 +2,7 @@ package com.example.server.security.core.validatorcode.smscode.filter;
 
 
 import com.example.server.common.entity.ValidatorName;
+//import com.example.server.common.redis.RedisService;
 import com.example.server.common.redis.RedisService;
 import com.example.server.security.core.handle.MyAuthenticationFaiurelHandle;
 import com.example.server.security.core.handle.MyAuthenticationSuccessHandle;
@@ -134,7 +135,7 @@ public class SmsCodeFilter extends OncePerRequestFilter implements InitializingB
 //        String smsCode=(String)redisService.getValue("123456");
         /** 从request中获取登陆提交表单的验证码信息*/
         String codeInRequest = ServletRequestUtils.getStringParameter(servletRequest.getRequest(), "smscode");
-
+//
         if (StringUtils.isBlank(codeInRequest)) {
             throw new ValidatorCodeException("输入验证码信息为空");
         }
@@ -156,9 +157,9 @@ public class SmsCodeFilter extends OncePerRequestFilter implements InitializingB
 //            System.out.println("验证码不匹配");
             throw new ValidatorCodeException("验证码不匹配");
         }
-//        if(!smsCode.getCode().equals(codeInRequest)){
-//            throw new ValidatorCodeException("验证码不匹配");
-//        }
+        if(!smsCode.getCode().equals(codeInRequest)){
+            throw new ValidatorCodeException("验证码不匹配");
+        }
 //        httpSessionSessionStrategy.removeAttribute(servletRequest, ValidatorCodeController.getSessionImageKey());
 
 

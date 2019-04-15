@@ -15,9 +15,12 @@ import java.util.Set;
  */
 public interface ConferenceService {
     public  boolean createConference(Conference conference);
+    public boolean modifyConference(Conference conference,String conferenceId);
+
     public List<Conference> findAll();
     public  Conference findOneByConferenceId(String conferenceId);
     public Set<User>  attendConferenceUsers(String conferenceId);
 
+    public void deleteConference(String conferencdId);
 
 }
