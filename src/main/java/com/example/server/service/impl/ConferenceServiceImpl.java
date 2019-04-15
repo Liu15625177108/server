@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -28,6 +29,7 @@ public class ConferenceServiceImpl implements ConferenceService {
     @Override
     public boolean createConference(Conference conference) {
             conference.setId(idCreator.createId());
+            conference.setDate(new Date());
             conferenceRepository.save(conference);
             return  true;
     }

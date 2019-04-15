@@ -18,6 +18,4 @@ public interface ConferenceService {
     public List<Conference> findAll();
     public  Conference findOneByConferenceId(String conferenceId);
     public Set<User>  attendConferenceUsers(String conferenceId);
-
-
 }

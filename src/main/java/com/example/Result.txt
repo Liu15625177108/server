@@ -1,0 +1,4453 @@
+[ .\server\common\entity\ResultInfo.java]  
+--------------------------------------------------------------------------------
+package com.example.server.common.entity;
+
+import org.springframework.http.HttpStatus;
+
+/**
+ * @ClassName ResultInfo
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.common.entity
+ * @Date 2019/2/22 17:42
+ */
+public class ResultInfo {
+    /**状态码*/
+    private HttpStatus httpStatus;
+    /**状态描述*/
+    private String msg;
+    /**接口数据*/
+    private Object data;
+
+    public ResultInfo(){}
+    public ResultInfo(HttpStatus httpStatus, String msg, Object content) {
+        this.httpStatus = httpStatus;
+        this.msg = msg;
+        this.data = content;
+    }
+
+    public HttpStatus getHttpStatus() {
+        return httpStatus;
+    }
+
+    public void setHttpStatus(HttpStatus httpStatus) {
+        this.httpStatus = httpStatus;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
+    }
+
+}
+
+
+[ .\server\common\entity\ValidatorName.java]  
+--------------------------------------------------------------------------------
+package com.example.server.common.entity;
+
+/**
+ * @ClassName ValidatorName
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.common.entity
+ * @Date 2019/3/8 13:45
+ */
+public class ValidatorName {
+    private  static String IMAGE_KEY;
+    private  static  String SMS_KEY;
+//    private  static   String SESSION_KEY;
+
+    public static String getImageKey() {
+        return IMAGE_KEY;
+    }
+
+    public static void setImageKey(String imageKey) {
+        IMAGE_KEY = imageKey;
+    }
+
+    public static String getSmsKey() {
+        return SMS_KEY;
+    }
+
+    public static void setSmsKey(String smsKey) {
+        SMS_KEY = smsKey;
+    }
+}
+
+
+[ .\server\common\file\FileController.java]  
+--------------------------------------------------------------------------------
+package com.example.server.common.file;
+
+import com.example.server.common.entity.ResultInfo;
+import com.example.server.entity.Paper;
+import com.example.server.entity.User;
+import com.example.server.entity.repository.PaperRepository;
+import com.example.server.service.ConferenceService;
+import com.example.server.service.PaperService;
+import com.example.server.service.UserService;
+import org.apache.tomcat.jni.FileInfo;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.net.URLEncoder;
+
+import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.String;
+
+@RestController
+@RequestMapping("/file")
+public class FileController {
+    @Autowired
+    private PaperService paperService;
+
+    @Autowired
+     private UserService userService;
+//    String floder="D:\\20152100172\\demosecurity\\src\\main\\java\\com\\example\\demosecurity\\api\\controller\\";
+//    String floder="C:\\Users\\Administrator\\Desktop\\server\\";
+    String floder="/home/ubuntu/file/";
+//    String floder="D:\\test\\";
+
+    @GetMapping("/download/{id}")
+    public  void downLoad(@PathVariable String id, @RequestParam(name = "conferenceId",required = false) String conferenceId,@RequestParam(name = "username")String userName, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Paper paper=paperService.findOneByPaperId(id);
+       response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
+//       response.addHeader("Content-Disposition",new String(paper.getPaperFileName().getBytes("GBK"),"ISO-8859-1"));
+
+        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(paper.getPaperFileName(),"UTF-8")+";filename*=UTF-8;");
+//        response.setContentType("application/octet-stream");
+//        response.setCharacterEncoding("UTF-8");
+
+//
+        if(conferenceId==null&&paper.getUserName().equals(userName)){
+            try (InputStream inputStream = new FileInputStream(new File(floder, id + paper.getPaperFileName()));
+                 OutputStream outputStream = response.getOutputStream();
+            ) {
+                response.setContentType("application/x-download");
+                System.out.println(paper.getPaperFileName());
+//                response.addHeader("Content-Disposition", "attach;filename=" + new String(paper.getPaperFileName().getBytes("gb2312"), "ISO8859-1"));
+                IOUtils.copy(inputStream, outputStream);
+                outputStream.flush();
+            }
+
+        }
+        else
+       if( userService.createOrNot(userName,conferenceId)&&paper.getConferenceId().equals(conferenceId)) {
+           try (InputStream inputStream = new FileInputStream(new File(floder, id + paper.getPaperFileName()));
+                OutputStream outputStream = response.getOutputStream();
+           ) {
+               response.setContentType("application/x-download");
+               System.out.println(paper.getPaperFileName());
+//               response.addHeader("Content-Disposition", "attach;filename=" + new String(paper.getPaperFileName().getBytes("gb2312"), "ISO8859-1"));
+               IOUtils.copy(inputStream, outputStream);
+               outputStream.flush();
+           }
+       }
+
+//        return new ResultInfo(HttpStatus.OK,"download success",paper.getPaperFileName());
+    }
+    //    @PostMapping(value = "/upload",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<Object> uploadFile(@RequestParam("file")MultipartFile file) throws IOException {
+//        File convertFile =new File(floder+file.getOriginalFilename());
+//        convertFile.createNewFile();
+//        FileOutputStream fileOutputStream=new FileOutputStream(convertFile);
+//        fileOutputStream.write(file.getBytes());
+//        fileOutputStream.close();
+//        return new ResponseEntity<>("file is upload sucessfully",HttpStatus.OK);
+//
+//    }
+    @PostMapping(value = "/upload",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResultInfo uploadFile(@RequestParam("file")MultipartFile file, @RequestParam("paperTitle")String paperTitle,
+                                 @RequestParam("conferenceId")String conferenceId, Authentication authentication) throws IOException {
+//        Paper paper=new Paper(file.getOriginalFilename());
+            if(userService.attendOrNot(authentication.getName(),conferenceId)) {
+                if (paperService.exitByConferenceAndUserName(conferenceId,authentication.getName())){
+                    Paper paper=paperService.findOneByConferenceIdAndUserName(conferenceId,authentication.getName());
+                    paper.setPaperTilte(paperTitle);
+                    File oldFile = new File(floder+paper.getPaperId()+paper.getPaperFileName());
+                    File convertFile = new File(floder +paper.getPaperId()+ file.getOriginalFilename());
+
+                    if(oldFile.exists()) {
+                        oldFile.delete();
+                    }
+
+                    convertFile.createNewFile();
+                    FileOutputStream fileOutputStream = new FileOutputStream(convertFile);
+                    fileOutputStream.write(file.getBytes());
+                    fileOutputStream.close();
+                    paper.setPaperFileName(file.getOriginalFilename());
+                    paperService.save(paper);
+                }
+                else{
+                    Paper paper=new Paper(paperTitle,conferenceId,authentication.getName());
+                    paperService.create(paper);
+                    System.out.println(paper.getPaperId());
+                    paper.setPaperFileName(file.getOriginalFilename());
+                    File convertFile = new File(floder +paper.getPaperId()+ file.getOriginalFilename());
+                    System.out.println(paper.getPaperId());
+                    convertFile.createNewFile();
+                    FileOutputStream fileOutputStream = new FileOutputStream(convertFile);
+                    fileOutputStream.write(file.getBytes());
+                    fileOutputStream.close();
+
+                    System.out.println(paper.getPaperId());
+                    paperService.save(paper);
+                    System.out.println(paper.getPaperId());
+                }
+                return new ResultInfo(HttpStatus.OK,"file is upload sucessfully", true);
+
+            }
+
+        return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"file is upload failure", false);
+    }
+
+
+}
+
+[ .\server\common\filter\CorsFilter.java]  
+--------------------------------------------------------------------------------
+package com.example.server.common.filter;
+
+        import org.springframework.core.annotation.Order;
+        import org.springframework.stereotype.Component;
+
+        import javax.servlet.*;
+        import javax.servlet.annotation.WebFilter;
+        import javax.servlet.http.HttpServletRequest;
+        import javax.servlet.http.HttpServletResponse;
+        import java.io.IOException;
+
+/**
+ * @ClassName CorsFilter
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.common.filter
+ * @Date 2019/2/23 16:57
+ */
+//@WebFilter(urlPatterns = "/*")
+//@Order(-1)
+public class CorsFilter  implements Filter {
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+
+    }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+//        System.out.println("in filter");
+        HttpServletRequest httpServletRequest = (HttpServletRequest)request;
+        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+//        res.setHeader("Access-Control-Allow-Origin", "*");
+//        res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PUT, GET");
+//        res.setHeader("Access-Control-Max-Age", "3600");
+////        res.setHeader("Access-Control-Allow-Headers", "x-requested-with");
+////        res.addHeader("Access-Control-Allow-Origin","*");
+//        res.setHeader("Access-Control-Allow-Headers","Origin,X-Requespted-With,Content-Type,Accept,Authorization");
+        httpServletResponse.addHeader("Access-Control-Allow-Origin","*");
+        httpServletResponse.addHeader("Access-Control-Allow-Headers","Origin,X-Requespted-With,Content-Type,Accept,Authorization,Content-Disposition");
+       httpServletResponse.addHeader("Access-Control-Allow-Credentials", "true");
+//       httpServletResponse.addHeader("Access-Control-Max-Age","1800L");
+//       if(httpServletRequest.getMethod().equals("OPTIONS"))
+        chain.doFilter(httpServletRequest, httpServletResponse);
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+}
+
+
+[ .\server\common\filter\CorsFilterConfig.java]  
+--------------------------------------------------------------------------------
+package com.example.server.common.filter;
+
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.DefaultSecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
+
+/**
+ * @ClassName CorsFilterConfig
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.common.filter
+ * @Date 2019/2/24 10:48
+ */
+@Component
+public class CorsFilterConfig extends SecurityConfigurerAdapter<DefaultSecurityFilterChain,HttpSecurity> {
+
+    @Override
+    public void configure(HttpSecurity http) throws Exception {
+        CorsFilter corsFilter=new CorsFilter();
+        http.addFilterBefore(corsFilter,UsernamePasswordAuthenticationFilter.class);
+    }
+}
+
+
+[ .\server\common\logger\MyLogger.java]  
+--------------------------------------------------------------------------------
+package com.example.server.common.logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+/**
+ * @ClassName MyLogger
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.common.logger
+ * @Date 2019/2/22 17:44
+ */
+@Component
+public class MyLogger {
+    private Logger logger=LoggerFactory.getLogger(this.getClass());
+
+    public Logger getLogger() {
+        return logger;
+    }
+
+    public void setLogger(Logger logger) {
+        this.logger = logger;
+    }
+}
+
+[ .\server\common\redis\RedisConfig.java]  
+--------------------------------------------------------------------------------
+package com.example.server.common.redis;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CachingConfigurerSupport;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+
+/**
+ * @ClassName RedisConfig
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.common.redis
+ * @Date 2019/3/1 10:21
+ */
+
+@Configuration
+@EnableCaching
+public class RedisConfig extends CachingConfigurerSupport {
+
+    //缓存管理器
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory factory) {
+        RedisCacheManager cacheManager = RedisCacheManager.create(factory);
+        return cacheManager;
+    }
+
+    @Bean
+    public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory factory) {
+        StringRedisTemplate template = new StringRedisTemplate(factory);
+        setSerializer(template);//设置序列化工具
+        template.afterPropertiesSet();
+        return template;
+    }
+
+    private void setSerializer(StringRedisTemplate template) {
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
+        ObjectMapper om = new ObjectMapper();
+        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+        jackson2JsonRedisSerializer.setObjectMapper(om);
+        template.setValueSerializer(jackson2JsonRedisSerializer);
+    }
+}
+
+
+[ .\server\common\redis\RedisService.java]  
+--------------------------------------------------------------------------------
+package com.example.server.common.redis;
+
+/**
+ * @ClassName RedisService
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.common.redis
+ * @Date 2019/3/1 10:31
+ */
+public interface RedisService {
+
+
+    /**
+     * 设置key-value
+     * @param key
+     * @param value
+     */
+    void setKey(String key, Object value);
+
+    /**
+     * 获取key
+     * @param key
+     * @return
+     */
+    Object getValue(String key);
+
+    /**
+     * 删除key
+     * @param key
+     */
+    void delete(String key);
+}
+
+
+[ .\server\common\redis\RedisServiceImpl.java]  
+--------------------------------------------------------------------------------
+package com.example.server.common.redis;
+
+import com.example.server.security.core.properties.SecurityProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.stereotype.Service;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * @ClassName RedisServiceImpl
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.common.redis
+ * @Date 2019/3/1 10:31
+ */
+
+@Service
+public class RedisServiceImpl implements  RedisService {
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Override
+    public void setKey(String key, Object value) {
+        ValueOperations<String, Object> ops = redisTemplate.opsForValue();
+        ops.set(key, value, 300, TimeUnit.SECONDS);
+
+    }
+
+    @Override
+    public Object getValue(String key) {
+        ValueOperations<String, Object> ops = redisTemplate.opsForValue();
+        return ops.get(key);
+    }
+
+
+    @Override
+    public void delete(String key) {
+            redisTemplate.delete(key);
+    }
+}
+
+
+[ .\server\common\sender\emailsender\SendEmialUtil.java]  
+--------------------------------------------------------------------------------
+package com.example.server.common.sender.emailsender;
+
+
+
+
+
+
+import org.springframework.stereotype.Service;
+
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
+/**
+ * @ClassName SendEmialUtil
+ * @Author:Jerry.Liu;
+ * @Description:实现发送邮件功能，发送者默认为"2447152234@qq.com（个人qq邮箱）"
+ * @Package com.example.remote.common.sender.emailsender
+ * @Date 2018/9/13 9:45
+ */
+@Service
+public class SendEmialUtil {
+    public boolean sendEmail(String Title,String Text,String toEmail){
+        try {
+            Properties props = new Properties();
+            props.setProperty("mail.smtp.auth", "true");//设置访问smtp服务器需要认证
+            props.setProperty("mail.transport.protocol", "smtp"); //设置访问服务器的协议
+
+            Session session = Session.getDefaultInstance(props);
+            session.setDebug(true); //打开debug功能
+
+            Message msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress("2447152234@qq.com")); //设置发件人.
+            msg.setText(Text); //设置邮件内容
+            msg.setSubject(Title); //设置邮件主题
+            Transport trans = session.getTransport();
+            trans.connect("smtp.qq.com", 25, "2447152234", "rfapbcytoktaebaf"); //连接邮箱smtp服务器，25为默认端口
+
+            trans.sendMessage(msg, new Address[]{new InternetAddress(toEmail)}); //发送邮件
+
+            trans.close(); //关闭连接
+        }catch (MessagingException e){
+//            e.printStackTrace();
+            return  false;
+        }
+        return  true;
+
+    }
+
+    /**
+     *@Author Jerry.Liu
+     *@Description://邮箱验证方法，若为真的则返回true，否则返回false。
+     *@Date:22:31 2018/7/22
+     *@Package: com.study.demo.test6.util
+     */
+    public static boolean checkEmaile(String emaile){
+        String RULE_EMAIL = "^\\w+((-\\w+)|(\\.\\w+))*\\@[A-Za-z0-9]+((\\.|-)[A-Za-z0-9]+)*\\.[A-Za-z0-9]+$";
+        //正则表达式的模式
+        Pattern p = Pattern.compile(RULE_EMAIL);
+        //正则表达式的匹配器
+        Matcher m = p.matcher(emaile);
+        //进行正则匹配
+        return m.matches();
+    }
+//    public static void main(String[] args) {
+//        SendEmialUtil sendEmialUtil=new SendEmialUtil();
+//        sendEmialUtil.sendEmail("test","hello","jerry.liu@m.scnu.edu.cn");
+//    }
+}
+
+
+[ .\server\common\sender\smssender\Config.java]  
+--------------------------------------------------------------------------------
+package com.example.server.common.sender.smssender;
+
+/**
+ * @ClassName Config
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.remote.common.sender
+ * @Date 2018/9/12 23:30
+ */
+public class Config {
+    /**
+     * url前半部分
+     */
+    public static final String BASE_URL = "https://api.miaodiyun.com/20150822";
+
+    /**
+     * 开发者注册后系统自动生成的账号，可在官网登录后查看
+     */
+    public static final String ACCOUNT_SID = "3218d88580a24638b687533e4269774d";
+
+    /**
+     * 开发者注册后系统自动生成的TOKEN，可在官网登录后查看
+     */
+    public static final String AUTH_TOKEN = "b9979e6765ce40b5a5fe6268aff3d78f";
+
+    /**
+     * 响应数据类型, JSON或XML
+     */
+    public static final String RESP_DATA_TYPE = "json";
+}
+
+
+[ .\server\common\sender\smssender\HttpUtil.java]  
+--------------------------------------------------------------------------------
+package com.example.server.common.sender.smssender;
+
+import org.apache.commons.codec.digest.DigestUtils;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.net.URLConnection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+/**
+*@Author Jerry.Liu
+*@Description:第三方工具类。
+*@Parameter
+*@Date:21:48 2018/9/19
+*@Package: com.example.conferencedemo.common.sender.smssender
+*/
+public class HttpUtil
+{
+    /**
+     * 构造通用参数timestamp、sig和respDataType
+     *
+     * @return
+     */
+    public static String createCommonParam()
+    {
+        // 时间戳
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String timestamp = sdf.format(new Date());
+
+        // 签名
+        String sig = DigestUtils.md5Hex(Config.ACCOUNT_SID + Config.AUTH_TOKEN + timestamp);
+
+        return "&timestamp=" + timestamp + "&sig=" + sig + "&respDataType=" + Config.RESP_DATA_TYPE;
+    }
+
+    /**
+     * post请求
+     *
+     * @param url
+     *            功能和操作
+     * @param body
+     *            要post的数据
+     * @return
+     * @throws IOException
+     */
+    public static String post(String url, String body)
+    {
+        System.out.println("url:" + System.lineSeparator() + url);
+        System.out.println("body:" + System.lineSeparator() + body);
+
+        String result = "";
+        try
+        {
+            OutputStreamWriter out = null;
+            BufferedReader in = null;
+            URL realUrl = new URL(url);
+            URLConnection conn = realUrl.openConnection();
+
+            // 设置连接参数
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(20000);
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            // 提交数据
+            out = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
+            out.write(body);
+            out.flush();
+
+            // 读取返回数据
+            in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+            String line = "";
+            boolean firstLine = true; // 读第一行不加换行符
+            while ((line = in.readLine()) != null)
+            {
+                if (firstLine)
+                {
+                    firstLine = false;
+                } else
+                {
+                    result += System.lineSeparator();
+                }
+                result += line;
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+
+
+
+    public static String postHuiDiao(String url, String body)
+    {
+        String result = "";
+        try
+        {
+            OutputStreamWriter out = null;
+            BufferedReader in = null;
+            URL realUrl = new URL(url);
+            URLConnection conn = realUrl.openConnection();
+
+            // 设置连接参数
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(20000);
+
+            // 提交数据
+            out = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
+            out.write(body);
+            out.flush();
+
+            // 读取返回数据
+            in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+            String line = "";
+            boolean firstLine = true; // 读第一行不加换行符
+            while ((line = in.readLine()) != null)
+            {
+                if (firstLine)
+                {
+                    firstLine = false;
+                } else
+                {
+                    result += System.lineSeparator();
+                }
+                result += line;
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return result;
+    }
+}
+
+[ .\server\common\sender\smssender\MySmsSender.java]  
+--------------------------------------------------------------------------------
+package com.example.server.common.sender.smssender;
+
+
+
+import com.example.server.security.core.validatorcode.basecode.ValidatorCode;
+import com.example.server.security.core.validatorcode.smscode.SmsCodeSender;
+import org.springframework.stereotype.Component;
+
+import java.net.URLEncoder;
+
+/**
+ * @ClassName MySmsSender
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.remote.common.sender
+ * @Date 2018/9/13 9:25
+ */
+//@Component("mydefaultSmsSender")
+public class MySmsSender implements SmsCodeSender {
+
+    private static String operation = "/industrySMS/sendSMS";
+    private static String accountSid = Config.ACCOUNT_SID;
+    private  String smsContent = "【学术小牧】尊敬的用户，您的验证码为";
+    @Override
+    public void sendCode(String phone, ValidatorCode code) {
+
+
+
+        String to=phone;
+        String tmpSmsContent = null;
+        try{
+            smsContent=smsContent+code.getCode();
+            tmpSmsContent = URLEncoder.encode(smsContent, "UTF-8");
+        }catch(Exception e){
+
+        }
+        String url = Config.BASE_URL + operation;
+        String body = "accountSid=" + accountSid + "&to=" + to + "&smsContent=" + tmpSmsContent
+                + HttpUtil.createCommonParam();
+
+        // 提交请求
+        String result = HttpUtil.post(url, body);
+        System.out.println("result:" + System.lineSeparator() + result);
+
+    }
+
+}
+
+
+[ .\server\common\uuid\IdCreator.java]  
+--------------------------------------------------------------------------------
+package com.example.server.common.uuid;
+
+import org.springframework.stereotype.Component;
+
+import java.util.UUID;
+
+/**
+ * @ClassName IdCreator
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.common.uuid
+ * @Date 2019/2/22 17:39
+ */
+@Component
+public class IdCreator  {
+    public String createId(){
+        return UUID.randomUUID().toString();
+    }
+}
+
+
+[ .\server\controller\ConferenceController.java]  
+--------------------------------------------------------------------------------
+package com.example.server.controller;
+
+import com.example.server.common.entity.ResultInfo;
+import com.example.server.entity.Conference;
+import com.example.server.entity.User;
+import com.example.server.service.ConferenceService;
+import com.example.server.service.UserService;
+import com.fasterxml.jackson.annotation.JsonView;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * @ClassName ConferenceController
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.controller
+ * @Date 2019/3/5 20:56
+ */
+@RequestMapping("/conference")
+@RestController
+public class ConferenceController {
+    @Autowired
+    private ConferenceService conferenceService;
+
+
+    @PostMapping("/create")
+    public ResultInfo createConference(@RequestBody Conference conference) {
+
+            if (conferenceService.createConference(conference)) {
+                return new ResultInfo(HttpStatus.OK, "success", conference);
+            } else {
+                return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR, "failure", "会议名已经存在");
+            }
+        }
+
+    @GetMapping("/all")
+//    @JsonView(Conference.simpleView.class)
+    public ResultInfo showAll(){
+        return  new ResultInfo(HttpStatus.OK,"success",conferenceService.findAll());
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://输入一个会议id，返回参加会议的users
+    *@Parameter
+    *@Date:18:12 2019/3/7
+    *@Package: com.example.server.controller
+    */
+    @GetMapping("/users")
+    public ResultInfo conferenceAttendUser(@RequestParam("conferenceId")String conferenceId){
+        return  new ResultInfo(HttpStatus.OK,"success",conferenceService.attendConferenceUsers(conferenceId));
+    }
+
+    @GetMapping("/details")
+    public ResultInfo conferenceDetails(@RequestParam("conferenceId") String conferenceId){
+        return  new ResultInfo(HttpStatus.OK,"success",conferenceService.findOneByConferenceId(conferenceId));
+    }
+
+
+}
+
+
+[ .\server\controller\HomePageController.java]  
+--------------------------------------------------------------------------------
+package com.example.server.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+public class HomePageController {
+
+    @RequestMapping("/")
+    public String home(){
+        return "/index.html";
+    }
+}
+
+
+[ .\server\controller\ManagerController.java]  
+--------------------------------------------------------------------------------
+package com.example.server.controller;
+
+import com.example.server.entity.Conference;
+import com.example.server.entity.User;
+import com.example.server.service.ConferenceService;
+import com.example.server.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+/**
+ * @ClassName ManagerController
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.controller
+ * @Date 2019/3/7 20:10
+ */
+@RestController
+@RequestMapping("/manager")
+public class ManagerController {
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private ConferenceService conferenceService;
+
+    @GetMapping("/showusers")
+    public List<User> showall(){
+        return  userService.findAll();
+    }
+
+    @GetMapping("/showconferences")
+    public List<Conference> showConference(){
+        return conferenceService.findAll();
+    }
+}
+
+
+[ .\server\controller\PaperController.java]  
+--------------------------------------------------------------------------------
+package com.example.server.controller;
+
+import com.example.server.common.entity.ResultInfo;
+import com.example.server.entity.Paper;
+import com.example.server.service.PaperService;
+import com.example.server.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.parameters.P;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * @ClassName PaperController
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.controller
+ * @Date 2019/3/7 18:20
+ */
+@RestController
+@RequestMapping("/paper")
+public class PaperController {
+    @Autowired
+    private PaperService paperService;
+
+
+    @Autowired
+    private UserService userService;
+    /**
+    *@Author Jerry.Liu
+    *@Description://查看某个会议的所以paper,需要验证该用户是否为此会议的创建者，如果是则查找返回数据，否则返回null
+    *@Parameter
+    *@Date:9:48 2019/3/8
+    *@Package: com.example.server.controller
+    */
+    @GetMapping("/conference/{conferenceId}")
+    public ResultInfo findAllByConferenceId(@PathVariable String conferenceId, Authentication authentication){
+        if(userService.createOrNot(authentication.getName(),conferenceId)){
+            return  new ResultInfo(HttpStatus.OK,"success",paperService.findAllByConferenceId(conferenceId));
+        }
+        return  new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure",null);
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://返回用户所以的paper信息；
+    *@Parameter
+    *@Date:9:50 2019/3/8
+    *@Package: com.example.server.controller
+    */
+    @GetMapping("/user")
+    public ResultInfo findAllbyUserName(Authentication authentication){
+        return  new ResultInfo(HttpStatus.OK,"success",paperService.findAllByUserName(authentication.getName()));
+    }
+
+
+    //返回所有论文信息
+    @GetMapping("/all")
+    public ResultInfo findAll(Authentication authentication){
+        return new ResultInfo(HttpStatus.OK,"success,",paperService.findAll());
+    }
+
+
+
+    @PostMapping("/addComment")
+    public  ResultInfo addComment(Authentication authentication,@RequestParam("paperId")String paperId,@RequestParam("comment")String comment){
+        Paper paper=paperService.findOneByPaperId(paperId);
+        if(userService.createOrNot(authentication.getName(),paper.getConferenceId())){
+            paperService.addComment(paper,comment);
+            return new ResultInfo(HttpStatus.OK,"success",true);
+        }
+        return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure",false);
+    }
+}
+
+
+[ .\server\controller\UserController.java]  
+--------------------------------------------------------------------------------
+package com.example.server.controller;
+
+import com.example.server.common.entity.ResultInfo;
+import com.example.server.common.sender.emailsender.SendEmialUtil;
+import com.example.server.entity.Conference;
+import com.example.server.entity.User;
+import com.example.server.service.UserService;
+import com.fasterxml.jackson.annotation.JsonView;
+import jdk.nashorn.internal.runtime.logging.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.*;
+
+/**
+ * @ClassName UserController
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.controller
+ * @Date 2019/2/22 17:41
+ */
+@RestController
+@RequestMapping("/user")
+public class UserController {
+
+    /**注入用户service对象*/
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private SendEmialUtil sendEmialUtil;
+
+    /**
+     *@Author Jerry.Liu
+     *@Description://TODO
+     *@Parameter
+     *@Date:16:41 2018/9/10
+     *@Package: com.example.remote.user
+     */
+//    @GetMapping("/test")
+//    public boolean sayHello(@RequestParam("userName")String userName,@RequestParam("conferenceId")String conferenceId){
+
+//    }
+//    @GetMapping("/test1")
+//    public boolean sayHello1(@RequestParam("userName")String userName,@RequestParam("conferenceId")String conferenceId){
+//        return userService.createOrNot(userName,conferenceId);
+//    }
+
+
+    /**
+     *@Author Jerry.Liu
+     *@Description:用户个人信息查看接口
+     *Parameter
+     *@Date:16:41 2018/9/10
+     *@Package: com.example.remote.user
+     */
+//    @GetMapping("/me")
+//    public Object aboutme(){
+//        return SecurityContextHolder.getContext().getAuthentication();
+//    }
+
+    /**
+     *@Author Jerry.Liu
+     *@Description:用户注册接口.
+     *@Parameter [user]
+     *@Date:16:41 2018/9/10
+     *@Package: com.example.remote.user
+     */
+    @PostMapping("/signup")
+    public ResultInfo signup(@Valid @RequestBody User user, BindingResult bindingResult ){
+                if (bindingResult.hasErrors()){
+                    List<String> list=new ArrayList<>();
+                    for(ObjectError objectError:bindingResult.getAllErrors()){
+                        list.add(objectError.getDefaultMessage());
+                    }
+            return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure",list);
+        }else {
+            if(userService.signup(user)){
+                return new ResultInfo(HttpStatus.OK,"success",user);
+            }else {
+                return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure","用户名已经存在");
+            }
+        }
+
+
+    }
+    @GetMapping("/simpleshow")
+//    @JsonView(User.simpleValue.class)
+    public ResultInfo showSimple(Authentication authentication){
+        return new ResultInfo(HttpStatus.OK,"success",userService.showSimple(authentication.getName()));
+    }
+/**
+*@Author Jerry.Liu
+*@Description://输入用户名以及会议id,返回报名结果。
+*@Parameter
+*@Date:18:09 2019/3/7
+*@Package: com.example.server.controller
+*/
+    @PostMapping("/attend")
+    public ResultInfo attendConference(Authentication authentication,@RequestParam("conferenceId")String conferenceId){
+
+        if(userService.attendConference(authentication.getName(),conferenceId)){
+            return new ResultInfo(HttpStatus.OK,"success","报名成功");
+        }
+        return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure","报名失败");
+    }
+
+
+
+    @PostMapping("/quit")
+    public ResultInfo quitConference(Authentication authentication,@RequestParam("conferenceId")String conferenceId){
+
+        if(userService.quitConference(authentication.getName(),conferenceId)){
+            return new ResultInfo(HttpStatus.OK,"success","退出成功");
+        }
+        return new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure","退出失败");
+    }
+    /**
+    *@Author Jerry.Liu
+    *@Description://输入一个用户名，返回他创建的会议信息；
+    *@Parameter
+    *@Date:18:09 2019/3/7
+    *@Package: com.example.server.controller
+    */
+    @GetMapping("/show/create")
+    public ResultInfo show(Authentication authentication){
+        return  new ResultInfo(HttpStatus.OK,"success",userService.showMyCreateConference(authentication.getName()));
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://输入一个用户名，返回他参加的会议信息；
+    *@Parameter
+    *@Date:18:10 2019/3/7
+    *@Package: com.example.server.controller
+    */
+    @GetMapping("show/attend")
+    public ResultInfo showAttend(Authentication authentication){
+        return  new ResultInfo(HttpStatus.OK,"success",userService.showMyAttendConference(authentication.getName()));
+    }
+
+    @GetMapping("show/isAttend")
+    public boolean showIsAttendConf(@RequestParam("conferenceId") String conferenceId,Authentication authentication){
+        Set<Conference> conferenceSet = userService.showMyAttendConference(authentication.getName());
+        for(Conference it:conferenceSet){
+            if(it.getId().equals(conferenceId)){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @GetMapping("show/isCreate")
+    public ResultInfo showIsCreateConf(Authentication authentication, @RequestParam("conferenceId") String conferenceId){
+        return new ResultInfo(HttpStatus.OK,"succcess",userService.createOrNot(authentication.getName(),conferenceId));
+    }
+}
+
+
+
+[ .\server\entity\Conference.java]  
+--------------------------------------------------------------------------------
+package com.example.server.entity;
+
+
+import com.fasterxml.jackson.annotation.*;
+import org.hibernate.annotations.GenericGenerator;
+
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * @ClassName Conference
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.entity
+ * @Date 2019/2/24 14:54
+ */
+@Entity
+public class Conference implements Serializable {
+    public interface  simpleView{
+    }
+    public interface defaultView extends  simpleView{
+    }
+
+
+    @javax.persistence.Id
+//    @GeneratedValue(generator = "idGenerator")
+//    @GenericGenerator(name = "idGenerator", strategy = "uuid")
+    private String id;
+
+    private String name;
+
+    private String address;
+
+    private String description;
+
+    private Date  date;
+
+//    @JsonBackReference
+    @JsonIgnoreProperties("conferenceSet")
+   @ManyToMany(mappedBy = "conferenceSet")
+    private Set<User>  userSet;
+
+    /**会议创办者姓名*/
+    private  String  createName;
+
+    /**会议联系人信息*/
+    private String  contactName;
+
+    private  String contactEmail;
+
+    private String contactPhone;
+
+
+    public Conference(String name, String address, String description, Date date, String userName,
+                      String contactName, String contactEmail, String contactPhone) {
+        this.name = name;
+        this.address = address;
+        this.description = description;
+        this.date = date;
+        this.createName = userName;
+        this.contactName = contactName;
+        this.contactEmail = contactEmail;
+        this.contactPhone = contactPhone;
+    }
+
+    public Conference() {
+    }
+    @JsonView(simpleView.class)
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    @JsonView(simpleView.class)
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @JsonView(simpleView.class)
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    @JsonView(simpleView.class)
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+
+    public Set<User> getUserSet() {
+        return userSet;
+    }
+
+    public void setUserSet(Set<User> userSet) {
+        this.userSet = userSet;
+    }
+
+
+
+    public String getCreateName() {
+        return createName;
+    }
+
+    public void setCreateName(String createName) {
+        this.createName = createName;
+    }
+
+    public String getContactName() {
+        return contactName;
+    }
+
+    public void setContactName(String contactName) {
+        this.contactName = contactName;
+    }
+
+    public String getContactEmail() {
+        return contactEmail;
+    }
+
+    public void setContactEmail(String contactEmail) {
+        this.contactEmail = contactEmail;
+    }
+
+    public String getContactPhone() {
+        return contactPhone;
+    }
+
+    public void setContactPhone(String contactPhone) {
+        this.contactPhone = contactPhone;
+    }
+
+
+}
+
+
+[ .\server\entity\Paper.java]  
+--------------------------------------------------------------------------------
+package com.example.server.entity;
+
+import com.example.server.common.uuid.IdCreator;
+import org.hibernate.annotations.GenericGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * @ClassName Paper
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.entity
+ * @Date 2019/3/3 19:08
+ */
+@Entity
+public class Paper  implements Serializable {
+
+    @Id
+//    @GenericGenerator(name = "jpa-uuid",strategy = "uuid")
+//    @GeneratedValue(generator ="jpa-uuid")
+    private String paperId;
+
+
+    private String paperTilte;
+
+    private Date  paperSubmitTime;
+
+    private  String  paperFileName;
+
+    private  String conferenceId;
+
+    private String userName;
+
+    private String paperComment;
+
+    public Paper(String paperTilte, String conferenceId, String userName) {
+        this.paperTilte = paperTilte;
+//        this.paperFileName = paperFileName;
+        this.conferenceId = conferenceId;
+        this.userName = userName;
+        this.paperSubmitTime=new Date();
+    }
+
+    public Paper() {
+    }
+
+    public String getPaperId() {
+        return paperId;
+    }
+
+    public void setPaperId(String paperId) {
+        this.paperId = paperId;
+    }
+
+    public String getPaperTilte() {
+        return paperTilte;
+    }
+
+    public void setPaperTilte(String paperTilte) {
+        this.paperTilte = paperTilte;
+    }
+
+    public Date getPaperSubmitTime() {
+        return paperSubmitTime;
+    }
+
+    public void setPaperSubmitTime(Date paperSubmitTime) {
+        this.paperSubmitTime = paperSubmitTime;
+    }
+
+    public String getPaperFileName() {
+        return paperFileName;
+    }
+
+    public void setPaperFileName(String paperFileName) {
+        this.paperFileName = paperFileName;
+    }
+
+    public String getConferenceId() {
+        return conferenceId;
+    }
+
+    public void setConferenceId(String conferenceId) {
+        this.conferenceId = conferenceId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPaperComment() {
+        return paperComment;
+    }
+
+    public void setPaperComment(String paperComment) {
+        this.paperComment = paperComment;
+    }
+}
+
+
+[ .\server\entity\repository\ConferenceRepository.java]  
+--------------------------------------------------------------------------------
+package com.example.server.entity.repository;
+
+import com.example.server.entity.Conference;
+import org.springframework.data.jpa.repository.JpaRepository;
+//import org.springframework.data.redis.connection.ReactiveListCommands;
+
+import java.util.List;
+
+/**
+ * @ClassName ConferenceRepository
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.entity.repository
+ * @Date 2019/3/3 19:46
+ */
+public interface ConferenceRepository extends JpaRepository<Conference,String> {
+//    public boolean existsById(String id);
+
+    public Conference findOneById(String id);
+    public List<Conference> findAllByCreateName(String createName);
+}
+
+
+[ .\server\entity\repository\PaperRepository.java]  
+--------------------------------------------------------------------------------
+package com.example.server.entity.repository;
+
+import com.example.server.entity.Paper;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+/**
+ * @ClassName PaperRepository
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.entity.repository
+ * @Date 2019/3/3 19:30
+ */
+public interface PaperRepository extends JpaRepository<Paper,String> {
+    public Paper findOneByPaperId(String paperId);
+    public boolean existsByConferenceIdAndUserName(String conferenceId,String userName);
+    public List<Paper> findAllByUserName(String userName);
+    public List<Paper> findAllByConferenceId(String conferenceId);
+    public Paper findOneByConferenceIdAndUserName(String conferenceId,String userName);
+ }
+
+
+[ .\server\entity\repository\UserRepository.java]  
+--------------------------------------------------------------------------------
+package com.example.server.entity.repository;
+
+import com.example.server.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+
+/**
+ * @ClassName UserRepository
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.entity
+ * @Date 2019/2/22 15:30
+ */
+public interface UserRepository extends JpaRepository<User,String> {
+    /**
+     *@Author Jerry.Liu
+     *@Description://TODO
+     *@Parameter [name]
+     *@Date:16:58 2018/9/5
+     *@Package: com.example.remote.user.entity
+     */
+    public User findOneByName(String name);
+    public User findOneByPhone(String phone);
+    public boolean existsByName(String name);
+
+    public  boolean existsByPhone(String phone);
+
+
+}
+
+
+[ .\server\entity\User.java]  
+--------------------------------------------------------------------------------
+package com.example.server.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonView;
+
+import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * @ClassName User
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.entity
+ * @Date 2019/2/22 15:03
+ */
+@Entity
+public class User  implements Serializable {
+    public interface simpleValue {
+    }
+
+    ;
+
+    public interface detailValue extends simpleValue {
+    }
+
+    ;
+
+
+    private String id;
+    @Id
+    @NotBlank
+    private String name;
+
+    @NotBlank
+    private String password;
+
+    private String phone;
+
+    @Email
+    private String email;
+
+    private  String role;
+
+    @ManyToMany
+    @JsonIgnoreProperties("userSet")
+    private Set<Conference> conferenceSet;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Set<Conference> getConferenceSet() {
+        return conferenceSet;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public void setConferenceSet(Set<Conference> conferenceSet) {
+        this.conferenceSet = conferenceSet;
+    }
+
+    public User(@NotBlank String name, @NotBlank String password, String phone, @Email String email) {
+        this.name = name;
+        this.password = password;
+        this.phone = phone;
+        this.email = email;
+        this.role="user";
+    }
+    public User(@NotBlank String name, @NotBlank String password, String phone, @Email String email,String role) {
+        this.name = name;
+        this.password = password;
+        this.phone = phone;
+        this.email = email;
+        this.role=role;
+    }
+
+    public User() {
+    }
+
+
+}
+
+[ .\server\security\Controller.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security;
+
+import com.example.server.entity.Conference;
+import com.example.server.entity.User;
+import com.example.server.entity.repository.ConferenceRepository;
+import com.example.server.entity.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import org.apache.commons.lang.StringUtils;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+/**
+ * @ClassName Controller
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server
+ * @Date 2019/2/21 23:02
+ */
+@RestController
+public class Controller {
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private ConferenceRepository conferenceRepository;
+
+
+    @GetMapping("/hello")
+    public String sayhello(){
+//        List<User> list=userRepository.findAll();
+//        List<Conference> conferences=conferenceRepository.findAll();
+//
+//            for(Conference conference:conferences) {
+////                user.getConferenceSet().add(conference);
+//                for (User user : conference.getUserSet()) {
+//                    System.out.println(user.getName());
+//                }
+//            }
+//            userRepository.save(user);'
+
+
+
+
+
+
+        return  "hello";
+    }
+
+    @GetMapping("/me")
+    public Object aboutMe(Authentication authentication, HttpServletRequest httpServletRequest) throws UnsupportedEncodingException {
+//        String header=httpServletRequest.getHeader("Authorization");
+//        String token = StringUtils.substringAfter(header,"bearer ");
+//        Claims claims= Jwts.parser().setSigningKey("liuyuxin".getBytes("UTF-8")).parseClaimsJws(token).getBody();
+        return authentication;
+//        return  claims;
+    }
+
+}
+
+
+
+[ .\server\security\core\handle\MyAuthenticationFaiurelHandle.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.handle;
+
+import com.example.server.common.entity.ResultInfo;
+import com.example.server.common.logger.MyLogger;
+import com.example.server.security.core.properties.browserproperties.LoginType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.stereotype.Component;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+/**
+ * @ClassName MyAuthenticationFaiurelHandle
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.security.core.handle
+ * @Date 2019/2/28 15:58
+ */
+@Component("MyAuthenticationFailureHandle")
+public class MyAuthenticationFaiurelHandle extends SimpleUrlAuthenticationFailureHandler {
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private SecurityProperties securityProperties;
+    @Autowired
+    private MyLogger myLogger;
+
+    @Override
+    public void onAuthenticationFailure(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AuthenticationException e) throws IOException, ServletException {
+//        myLogger.getLogger().info("登陆失败");
+
+            ResultInfo resultInfo=new ResultInfo(HttpStatus.INTERNAL_SERVER_ERROR,"failure",e.getMessage());
+            httpServletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            httpServletResponse.setContentType("application/json;charset=UTF-8");
+//            httpServletResponse.getWriter().write(objectMapper.writeValueAsString((Object)e.getMessage()));
+            httpServletResponse.getWriter().write(objectMapper.writeValueAsString((Object)resultInfo));
+
+    }
+}
+
+[ .\server\security\core\handle\MyAuthenticationSuccessHandle.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.handle;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+
+
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.common.exceptions.UnapprovedClientAuthenticationException;
+import org.springframework.security.oauth2.provider.*;
+import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
+
+import org.springframework.web.context.request.ServletWebRequest;
+
+import javax.servlet.ServletException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+import java.util.Base64;
+
+/**
+ * @ClassName MyAnthenticationSuccessHandle
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.conferencedemo.security.core.handle
+ * @Date 2018/9/19 15:15
+ */
+@Component
+public class MyAuthenticationSuccessHandle extends SavedRequestAwareAuthenticationSuccessHandler {
+
+    /**注入objectMapper,用于类型转化*/
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private ClientDetailsService clientDetailsService;
+
+    @Autowired
+    private AuthorizationServerTokenServices authorizationServerTokenServices;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+
+
+    /**
+     *@Author Jerry.Liu
+     *@Description://TODO
+     *@Parameter
+     *@Date:21:28 2018/9/7
+     *@Package: com.example.remote.security.core.handle
+     */
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
+        String header =httpServletRequest.getHeader("Authorization");
+        if (header != null && header.toLowerCase().startsWith("basic ")) {
+
+            String[] tokens = this.extractAndDecodeHeader(header, httpServletRequest);
+            assert tokens.length == 2;
+            String clientId = tokens[0];
+            String clientSecret= tokens[1];
+
+            ClientDetails clientDetails =clientDetailsService.loadClientByClientId(clientId);
+            if (clientDetails==null){
+                throw  new UnapprovedClientAuthenticationException("ClientId 对应的配置信息不存在"+clientId);
+            }
+//            if(!clientDetails.getClientSecret().equals(clientSecret)){
+            if(!passwordEncoder.matches(clientSecret,clientDetails.getClientSecret())){
+                throw  new UnapprovedClientAuthenticationException("ClientSecret 不匹配");
+            }
+            TokenRequest tokenRequest =new TokenRequest(null,clientId,clientDetails.getScope(),"custom");
+
+            OAuth2Request oAuth2Request =tokenRequest.createOAuth2Request(clientDetails);
+            OAuth2Authentication oAuth2Authentication=new OAuth2Authentication(oAuth2Request,authentication);
+            OAuth2AccessToken oAuth2AccessToken=authorizationServerTokenServices.createAccessToken(oAuth2Authentication);
+
+
+            httpServletResponse.setContentType("application/json;charset=UTF-8");
+            httpServletResponse.getWriter().write(objectMapper.writeValueAsString(oAuth2AccessToken));
+        }else {
+            throw new UnapprovedClientAuthenticationException("请求头中无client信息");
+        }
+
+
+
+    }
+    private String[] extractAndDecodeHeader(String header, HttpServletRequest request) throws IOException {
+        byte[] base64Token = header.substring(6).getBytes("UTF-8");
+
+        byte[] decoded;
+        try {
+            decoded = Base64.getDecoder().decode(base64Token);
+        } catch (IllegalArgumentException var7) {
+            throw new BadCredentialsException("Failed to decode basic authentication token");
+        }
+
+        String token = new String(decoded, "UTF-8");
+        int delim = token.indexOf(":");
+        if (delim == -1) {
+            throw new BadCredentialsException("Invalid basic authentication token");
+        } else {
+            return new String[]{token.substring(0, delim), token.substring(delim + 1)};
+        }
+    }
+}
+
+
+[ .\server\security\core\properties\browserproperties\BrowserProperties.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.properties.browserproperties;
+
+/**
+ * @ClassName BrowserProperties
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.conferencedemo.security.properties
+ * @Date 2018/9/19 15:12
+ */
+public class BrowserProperties {
+    private String loginPage="/login.html";
+
+    private LoginType loginType=LoginType.JSON;
+
+    private int rememberMeSecond = 3600;
+
+    public String getLoginPage() {
+        return loginPage;
+    }
+
+    public void setLoginPage(String loginPage) {
+        this.loginPage = loginPage;
+    }
+
+    public LoginType getLoginType() {
+        return loginType;
+    }
+
+    public void setLoginType(LoginType loginType) {
+        this.loginType = loginType;
+    }
+
+    public int getRememberMeSecond() {
+        return rememberMeSecond;
+    }
+
+    public void setRememberMeSecond(int rememberMeSecond) {
+        this.rememberMeSecond = rememberMeSecond;
+    }
+}
+
+
+[ .\server\security\core\properties\browserproperties\LoginType.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.properties.browserproperties;
+
+/**
+*@Author Jerry.Liu
+*@Description://TODO
+*@Parameter
+*@Date:15:26 2018/9/19
+*@Package: com.example.conferencedemo.security.properties
+*/
+public enum LoginType {
+    REDIRECT,
+
+    JSON
+}
+
+[ .\server\security\core\properties\codeproperties\CodeProperties.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.properties.codeproperties;
+
+/**
+ * @ClassName CodeProperties
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.conferencedemo.security.properties.codeproperties
+ * @Date 2018/9/19 21:10
+ */
+public class CodeProperties {
+
+    private int length = 6 ;
+    private int  expiretime = 300;
+
+    private String url = null;
+
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+    }
+
+    public int getExpiretime() {
+        return expiretime;
+    }
+
+    public void setExpiretime(int expiretime) {
+        this.expiretime = expiretime;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+}
+
+[ .\server\security\core\properties\codeproperties\ImageCodeProperties.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.properties.codeproperties;
+
+/**
+ * @ClassName ImageCodeProperties
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.conferencedemo.security.properties.codeproperties
+ * @Date 2018/9/19 21:11
+ */
+public class ImageCodeProperties extends CodeProperties {
+    private  int width= 67;
+    private  int height= 23;
+
+    public ImageCodeProperties() {
+        super();
+        setLength(4);
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+}
+
+
+[ .\server\security\core\properties\codeproperties\SmsCodeProperties.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.properties.codeproperties;
+
+/**
+ * @ClassName SmsCodeProperties
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.conferencedemo.security.properties.codeproperties
+ * @Date 2018/9/19 21:14
+ */
+public class SmsCodeProperties extends CodeProperties {
+}
+
+
+[ .\server\security\core\properties\codeproperties\ValidatorProperties.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.properties.codeproperties;
+
+/**
+ * @ClassName CodeProperties
+ * @Author:Jerry.Liu;
+ * @Description:验证码配置类。
+ * @Package com.example.conferencedemo.security.properties
+ * @Date 2018/9/19 15:13
+ */
+public class ValidatorProperties {
+
+    /**图片验证码的配置类*/
+    private ImageCodeProperties imageCodeProperties=new ImageCodeProperties();
+
+    /**短信验证码的配置类*/
+    private SmsCodeProperties smsCodeProperties=new SmsCodeProperties();
+
+    public ImageCodeProperties getImageCodeProperties() {
+        return imageCodeProperties;
+    }
+
+    public void setImageCodeProperties(ImageCodeProperties imageCodeProperties) {
+        this.imageCodeProperties = imageCodeProperties;
+    }
+
+    public SmsCodeProperties getSmsCodeProperties() {
+        return smsCodeProperties;
+    }
+
+    public void setSmsCodeProperties(SmsCodeProperties smsCodeProperties) {
+        this.smsCodeProperties = smsCodeProperties;
+    }
+}
+
+
+[ .\server\security\core\properties\SecurityProperties.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.properties;
+
+import com.example.server.security.core.properties.browserproperties.BrowserProperties;
+import com.example.server.security.core.properties.codeproperties.ValidatorProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+/**
+ * @ClassName SecurityProperties
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.security.core.properties
+ * @Date 2019/2/28 21:01
+ */
+@ConfigurationProperties(prefix = "mysecurity")
+public class SecurityProperties {
+    /** 登陆页面以及跳转页面配置类*/
+    private BrowserProperties browser=new BrowserProperties();
+
+    /** 验证码的配置类*/
+    private ValidatorProperties validatorProperties =new ValidatorProperties();
+
+//    private SocialProperties socialProperties=new SocialProperties();
+
+    /**getter(),setter()方法*/
+    public BrowserProperties getBrowser() {
+        return browser;
+    }
+
+    public void setBrowser(BrowserProperties browser) {
+        this.browser = browser;
+    }
+
+
+    public ValidatorProperties getValidatorProperties() {
+        return validatorProperties;
+    }
+
+    public void setValidatorProperties(ValidatorProperties validatorProperties) {
+        this.validatorProperties = validatorProperties;
+    }
+//
+//    public SocialProperties getSocialProperties() {
+//        return socialProperties;
+//    }
+//
+//    public void setSocialProperties(SocialProperties socialProperties) {
+//        this.socialProperties = socialProperties;
+//    }
+}
+
+[ .\server\security\core\properties\SecurityPropertiesConfig.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.properties;
+
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * @ClassName SecurityPropertiesConfig
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.conferencedemo.security.properties
+ * @Date 2018/9/19 15:17
+ */
+@Configuration
+@EnableConfigurationProperties(SecurityProperties.class)
+public class SecurityPropertiesConfig {
+}
+
+
+
+[ .\server\security\core\properties\socialproperties\SocialProperties.java]  
+--------------------------------------------------------------------------------
+//package com.example.server.security.core.properties.socialproperties;
+//
+//import com.example.conferencedemo.security.core.social.qqlogin.QQProperties;
+//import com.example.conferencedemo.security.core.social.wechatlogin.WeChatProperties;
+//
+///**
+// * @ClassName SocialProperties
+// * @Author:Jerry.Liu;
+// * @Description://TODO
+// * @Package com.example.conferencedemo.security.properties
+// * @Date 2018/9/19 15:13
+// */
+//public class SocialProperties {
+//    private QQProperties qqProperties =new QQProperties();
+//
+//    private WeChatProperties weChatProperties=new WeChatProperties();
+//
+//    public QQProperties getQqProperties() {
+//        return qqProperties;
+//    }
+//
+//    public void setQqProperties(QQProperties qqProperties) {
+//        this.qqProperties = qqProperties;
+//    }
+//
+//    public WeChatProperties getWeChatProperties() {
+//        return weChatProperties;
+//    }
+//
+//    public void setWeChatProperties(WeChatProperties weChatProperties) {
+//        this.weChatProperties = weChatProperties;
+//    }
+//}
+
+
+[ .\server\security\core\server\AuthorizationServerConfig.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.server;
+
+import com.example.server.security.MyUserDetailsService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+
+/**
+ * @ClassName AuthorizationServerConfig
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server
+ * @Date 2019/2/21 22:52
+ */
+@Configuration
+@EnableAuthorizationServer
+public class AuthorizationServerConfig  extends  AuthorizationServerConfigurerAdapter {
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private MyUserDetailsService myUserDetailsService;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private TokenStore jwtTokenStore;
+    @Autowired
+    private JwtAccessTokenConverter jwtAccessTokenConverter;
+    @Override
+    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+        clients.inMemory().withClient("client")
+                .secret(passwordEncoder.encode("123456"))
+                .authorizedGrantTypes("password", "refresh_token","authorization_code")
+                .accessTokenValiditySeconds(3600)
+                .scopes("app")
+                .and()
+                .withClient("client1")
+                .secret("123456")
+                .authorizedGrantTypes("refresh_token","authorization_code")
+                .scopes("all");
+    }
+
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+        endpoints.tokenStore(jwtTokenStore)
+                .accessTokenConverter(jwtAccessTokenConverter)
+                .userDetailsService(myUserDetailsService)
+                .authenticationManager(authenticationManager);
+    }
+    @Override
+    public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+        security.tokenKeyAccess("isAuthenticated()");
+    }
+}
+
+
+[ .\server\security\core\server\MyDaoAuthenticationProvider.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.server;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+/**
+ * @ClassName MyDaoAuthenticationProvider
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.security.core.server
+ * @Date 2019/3/9 12:47
+ */
+public class MyDaoAuthenticationProvider extends DaoAuthenticationProvider {
+
+    public MyDaoAuthenticationProvider() {
+    }
+
+    @Override
+    protected void additionalAuthenticationChecks(UserDetails userDetails,
+                                                  UsernamePasswordAuthenticationToken authentication)
+            throws AuthenticationException {
+        if (authentication.getCredentials() == null) {
+            logger.debug("Authentication failed: no credentials provided");
+
+            throw new BadCredentialsException(messages.getMessage(
+                    "AbstractUserDetailsAuthenticationProvider.badCredentials",
+                    "密码不能为空"));
+        }
+
+        String presentedPassword = authentication.getCredentials().toString();
+
+        if (!getPasswordEncoder().matches(presentedPassword, userDetails.getPassword())) {
+            logger.debug("Authentication failed: password does not match stored value");
+
+            throw new BadCredentialsException(messages.getMessage(
+                    "AbstractUserDetailsAuthenticationProvider.badCredentials",
+                    "密码输入错误"));
+        }
+    }
+}
+
+
+[ .\server\security\core\server\ResourceServerConfig.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.server;
+
+import com.example.server.common.filter.CorsFilterConfig;
+import com.example.server.security.MyUserDetailsService;
+import com.example.server.security.core.handle.MyAuthenticationFaiurelHandle;
+import com.example.server.security.core.handle.MyAuthenticationSuccessHandle;
+import com.example.server.security.core.smslogin.SmsAuthenticationFilterConfig;
+import com.example.server.security.core.validatorcode.smscode.filter.SmsCodeFilterConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
+import org.springframework.web.cors.CorsUtils;
+
+/**
+ * @ClassName ResourceServerConfig
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server
+ * @Date 2019/2/21 22:53
+ */
+@Configuration
+@EnableResourceServer
+public class ResourceServerConfig  extends ResourceServerConfigurerAdapter {
+
+
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private MyUserDetailsService myUserDetailsService;
+    @Autowired
+    private CorsFilterConfig corsFilterConfig;
+    @Autowired
+    private MyAuthenticationSuccessHandle myAuthenticationSuccessHandle;
+    @Autowired
+    private MyAuthenticationFaiurelHandle myAuthenticationFaiurelHandle;
+    @Autowired
+    private SmsCodeFilterConfig smsCodeFilterConfig;
+
+    @Autowired
+    private SmsAuthenticationFilterConfig smsAuthenticationFilterConfig;
+    @Override
+    public void configure(HttpSecurity http) throws Exception {
+
+        http.apply(corsFilterConfig)
+                .and()
+                .apply(smsCodeFilterConfig)
+                .and()
+                .apply(smsAuthenticationFilterConfig)
+                .and()
+                .authenticationProvider(daoAuthenticationProvider())
+                .formLogin().permitAll()
+                .loginPage("/server.html")
+                .loginProcessingUrl("/authentication/form")
+                .successHandler(myAuthenticationSuccessHandle)
+                .failureHandler(myAuthenticationFaiurelHandle)
+                .and()
+                .authorizeRequests()
+                .antMatchers("/error","/user/signup","/social/user","/login.html","/authentication/form","/hello","/css/**","/js/**","/webjars/bootstrap/4.0.0/css/bootstrap.css","/webjars/bootstrap/4.0.0/js/bootstrap.js","/webjars/angularjs/1.7.7/angular.js").permitAll()
+                .antMatchers("/authentication/require","/code/**","/signout","/session/invalid","/oauth/**","/oauth/token","/conference/create","/index.html","index","/test.html","/static/**","/","/login2.html","/conference/all","/file/download/**").permitAll()
+                .antMatchers("/manager/**").hasRole("ADMIN")
+                .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+                .and()
+                .authorizeRequests()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .cors()
+                .and()
+                .csrf().disable();
+
+//        ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry =http.authorizeRequests();
+//        registry.requestMatchers(CorsUtils::isPreFlightRequest).permitAll();
+
+
+
+    }
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        final CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(asList("*"));
+//        configuration.setAllowedMethods(asList("HEAD",
+//                "GET", "POST", "PUT", "DELETE", "PATCH"));
+//        // setAllowCredentials(true) is important, otherwise:
+//        // The value of the 'Access-Control-Allow-Origin' header in the response must not be the wildcard '*' when the request's credentials mode is 'include'.
+//        configuration.setAllowCredentials(true);
+//        // setAllowedHeaders is important! Without it, OPTIONS preflight request
+//        // will fail with 403 Invalid CORS request
+//        configuration.setAllowedHeaders(asList("Authorization", "Cache-Control", "Content-Type"));
+//        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//    }
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider(){
+         DaoAuthenticationProvider daoAuthenticationProvider = new MyDaoAuthenticationProvider();
+         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
+          daoAuthenticationProvider.setUserDetailsService(myUserDetailsService);
+          daoAuthenticationProvider.setHideUserNotFoundExceptions(false);
+         return daoAuthenticationProvider;
+    }
+}
+
+
+[ .\server\security\core\server\TokenStoreConfig.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.server;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
+
+/**
+ * @ClassName TokenStoreConfig
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server
+ * @Date 2019/2/22 11:35
+ */
+@Configuration
+public class TokenStoreConfig {
+    @Bean
+    public TokenStore jwtTokenStore(){
+        return  new JwtTokenStore(jwtAccessTokenConverter());
+    }
+    @Bean
+    public JwtAccessTokenConverter jwtAccessTokenConverter(){
+        JwtAccessTokenConverter accessTokenConverter=new JwtAccessTokenConverter();
+        accessTokenConverter.setSigningKey("liuyuxin");
+        return  accessTokenConverter;
+    }
+
+}
+
+
+[ .\server\security\core\smslogin\SmsAuthenticationFilter.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.smslogin;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.util.Assert;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * @ClassName SmsAuthenticationFilter
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.security.core.smslogin
+ * @Date 2019/2/28 15:53
+ */
+public class SmsAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+    public static final String SPRING_SMS_KEY = "phone";
+    private String PhoneParameter = "phone";
+
+    private boolean postOnly = true;
+
+    public SmsAuthenticationFilter() {
+        super(new AntPathRequestMatcher("/authentication/smsform", "POST"));
+    }
+
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+        if (this.postOnly && !request.getMethod().equals("POST")) {
+            throw new AuthenticationServiceException("Authentication method not supported: " + request.getMethod());
+        } else {
+            String phone = this.obtainPhone(request);
+
+            if (phone == null) {
+                phone= "";
+            }
+
+            phone=phone.trim();
+            SmsAuthenticationToken authRequest=new SmsAuthenticationToken(phone);
+            this.setDetails(request, authRequest);
+            AuthenticationManager authenticationManager=this.getAuthenticationManager();
+            Authentication authentication= authenticationManager.authenticate(authRequest);
+            return authentication;
+        }
+    }
+
+    protected String obtainPhone(HttpServletRequest request) {
+        return request.getParameter(this.PhoneParameter);
+    }
+
+
+
+    protected void setDetails(HttpServletRequest request, SmsAuthenticationToken authRequest) {
+        authRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
+    }
+
+    public void setPhoneParameter(String phoneParameter) {
+        Assert.hasText(PhoneParameter, "phone parameter must not be empty or null");
+        this.PhoneParameter=phoneParameter;
+    }
+
+
+
+    public void setPostOnly(boolean postOnly) {
+        this.postOnly = postOnly;
+    }
+
+
+}
+
+[ .\server\security\core\smslogin\SmsAuthenticationFilterConfig.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.smslogin;
+
+import com.example.server.security.core.handle.MyAuthenticationFaiurelHandle;
+import com.example.server.security.core.handle.MyAuthenticationSuccessHandle;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.DefaultSecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+/**
+ * @ClassName SmsAuthenticationFilterConfig
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.security.core.smslogin
+ * @Date 2019/2/28 15:55
+ */
+@Configuration
+public class SmsAuthenticationFilterConfig extends SecurityConfigurerAdapter<DefaultSecurityFilterChain,HttpSecurity> {
+
+    @Autowired
+    private MyAuthenticationSuccessHandle myAnthenticationSuccessHandle;
+
+    @Autowired
+    private MyAuthenticationFaiurelHandle myAuthenticationFaiurelHandle;
+
+
+    @Autowired
+    private SmsUserDetailService smsUserDetailService;
+
+    @Override
+    public void configure(HttpSecurity http) throws Exception {
+        SmsAuthenticationFilter smsAuthenticationFilter=new SmsAuthenticationFilter();
+        smsAuthenticationFilter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class));
+        smsAuthenticationFilter.setAuthenticationSuccessHandler(myAnthenticationSuccessHandle);
+        smsAuthenticationFilter.setAuthenticationFailureHandler(myAuthenticationFaiurelHandle);
+
+        SmsAuthenticationProvider smsAuthenticationProvider=new SmsAuthenticationProvider();
+        smsAuthenticationProvider.setSmsUserDetailService(smsUserDetailService);
+
+        http.authenticationProvider(smsAuthenticationProvider)
+                .addFilterAfter(smsAuthenticationFilter,UsernamePasswordAuthenticationFilter.class);
+    }
+}
+
+[ .\server\security\core\smslogin\SmsAuthenticationProvider.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.smslogin;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
+
+/**
+ * @ClassName SmsAuthenticationProvider
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.security.core.smslogin
+ * @Date 2019/2/28 15:54
+ */
+public class SmsAuthenticationProvider implements AuthenticationProvider {
+//    private UserDetailsService userDetailsService;
+
+    private  SmsUserDetailService smsUserDetailService;
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        SmsAuthenticationToken smsAuthenticationToken=(SmsAuthenticationToken)authentication;
+        String phone=(String)authentication.getPrincipal();
+//        SmsUser userDetails = (SmsUser) smsUserDetailService.loadUserByUsername(phone);
+       User userDetails = (User) smsUserDetailService.loadUserByUsername(phone);
+        if(userDetails==null){
+            throw  new InternalAuthenticationServiceException("无法获取用户信息");
+        }
+        else{
+            SmsAuthenticationToken authenticationResult= new SmsAuthenticationToken(userDetails,userDetails.getAuthorities());
+            authenticationResult.setDetails(smsAuthenticationToken.getDetails());
+            return  authenticationResult;
+        }
+
+    }
+
+    @Override
+    public boolean supports(Class<?> authentication) {
+        return SmsAuthenticationToken.class.isAssignableFrom(authentication);
+    }
+
+    public SmsUserDetailService getSmsUserDetailService() {
+        return smsUserDetailService;
+    }
+
+    public void setSmsUserDetailService(SmsUserDetailService smsUserDetailService) {
+        this.smsUserDetailService = smsUserDetailService;
+    }
+}
+
+
+[ .\server\security\core\smslogin\SmsAuthenticationToken.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.smslogin;
+
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+
+import java.util.Collection;
+
+/**
+ * @ClassName SmsAuthenticationToken
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.security.core.smslogin
+ * @Date 2019/2/28 15:54
+ */
+public class SmsAuthenticationToken extends AbstractAuthenticationToken {
+    private static final long serialVersionUID = 500L;
+    private final Object principal;
+//    private Object credentials;
+
+    public SmsAuthenticationToken(Object principal) {
+        super((Collection)null);
+        this.principal = principal;
+
+        this.setAuthenticated(false);
+    }
+
+    public SmsAuthenticationToken(Object principal,Collection<? extends GrantedAuthority> authorities) {
+        super(authorities);
+        this.principal = principal;
+        super.setAuthenticated(true);
+    }
+
+    @Override
+    public Object getCredentials() {
+        return null;
+    }
+
+    @Override
+    public Object getPrincipal() {
+        return this.principal;
+    }
+
+    @Override
+    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+        if (isAuthenticated) {
+            throw new IllegalArgumentException("Cannot set this token to trusted - use constructor which takes a GrantedAuthority list instead");
+        } else {
+            super.setAuthenticated(false);
+        }
+    }
+
+    @Override
+    public void eraseCredentials() {
+        super.eraseCredentials();
+    }
+}
+
+
+[ .\server\security\core\smslogin\SmsUser.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.smslogin;
+
+import org.springframework.security.core.CredentialsContainer;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
+
+/**
+ * @ClassName SmsUser
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.security.core.smslogin
+ * @Date 2019/2/28 15:55
+ */
+public class SmsUser implements UserDetails ,CredentialsContainer {
+
+    private String phone;
+
+    private String name;
+
+    public SmsUser(String phone, String name, List<GrantedAuthority> admin) {
+        this.phone = phone;
+        this.name = name;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
+    }
+
+    @Override
+    public String getPassword() {
+        return null;
+    }
+
+    @Override
+    public String getUsername() {
+        return null;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return false;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return false;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return false;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return false;
+    }
+
+    @Override
+    public void eraseCredentials() {
+
+    }
+}
+
+
+[ .\server\security\core\smslogin\SmsUserDetailService.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.smslogin;
+
+import com.example.server.entity.repository.UserRepository;
+import com.example.server.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Component;
+
+/**
+ * @ClassName SmsUserDetailService
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.security.core.smslogin
+ * @Date 2019/2/28 15:56
+ */
+@Component("smsUserDetailService")
+public class SmsUserDetailService implements UserDetailsService {
+    @Autowired
+    private UserRepository userRepository;
+    @Override
+    public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
+//        return new SmsUser(s,"jerry",AuthorityUtils.commaSeparatedStringToAuthorityList("admin"));
+        if (userRepository.existsByPhone(s)) {
+            com.example.server.entity.User user = userRepository.findOneByPhone(s);
+            if(user.getRole().equals("user")) {
+                return new User(user.getName(), user.getPassword(), AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_USER"));
+            }else {
+                return new  User(user.getName(), user.getPassword(), AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_ADMIN"));
+            }
+        }
+        else {
+            throw  new UsernameNotFoundException("该手机号码暂未注册");
+        }
+    }
+}
+
+[ .\server\security\core\validatorcode\basecode\CodeGenerator.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode.basecode;
+
+import org.springframework.web.context.request.ServletWebRequest;
+
+/**
+ * @ClassName CodeGenerator
+ * @Author:Jerry.Liu;
+ * @Description:验证码的接口（主要有验证码的生成方法）
+ * @Package com.example.conferencedemo.security.core.validatorcode.basecode
+ * @Date 2018/9/19 21:04
+ */
+public interface CodeGenerator {
+    ValidatorCode createCode(ServletWebRequest httpServletRequest);
+}
+
+
+[ .\server\security\core\validatorcode\basecode\ValidatorCode.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode.basecode;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+
+import java.awt.image.BufferedImage;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+/**
+ * @ClassName ValidatorCode
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.conferencedemo.security.core.validatorcode.basecode
+ * @Date 2018/9/19 21:03
+ */
+public class ValidatorCode implements Serializable {
+
+        /** 验证框中验证码的数值*/
+        private String code;
+
+        /** 验证码的过期时间*/
+        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+        @JsonSerialize(using = LocalDateTimeSerializer.class)
+        private LocalDateTime expireTime;
+
+
+        /**construtors*/
+
+        public ValidatorCode(String code, LocalDateTime expireTime) {
+            this.code = code;
+            this.expireTime = expireTime;
+        }
+
+        public ValidatorCode(String code, int expireSecond) {
+            this.code = code;
+            this.expireTime = LocalDateTime.now().plusSeconds(expireSecond);
+        }
+        public  ValidatorCode(){}
+
+
+        /**getter setter 方法 */
+
+        public String getCode() {
+            return code;
+        }
+        public void setCode(String code) {
+            this.code = code;
+        }
+
+        public LocalDateTime getExpireTime() {
+            return expireTime;
+        }
+
+        public void setExpireTime(LocalDateTime expireTime) {
+            this.expireTime = expireTime;
+        }
+
+        public BufferedImage showImage() {
+            return null;
+        }
+
+    }
+
+
+[ .\server\security\core\validatorcode\CodeGeneratorImplConfig.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode;
+
+import com.example.server.security.core.validatorcode.basecode.CodeGenerator;
+import com.example.server.security.core.validatorcode.imagecode.ImageCodeGenerator;
+import com.example.server.security.core.validatorcode.smscode.MydefaultSmsSender;
+import com.example.server.security.core.validatorcode.smscode.SmsCodeGenerator;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * @ClassName CodeImageGeneratorImplConfig
+ * @Author:Jerry.Liu;
+ * @Description:配置类 配置imagecode smscode的生成类以及smscode的发送。
+ * @Package com.example.remote.security.core.properties.code.imagecode
+ * @Date 2018/9/9 21:54
+ */
+@Configuration
+public class CodeGeneratorImplConfig {
+
+    @Bean
+    @ConditionalOnMissingBean(name = "imageCodeGenerator")
+    public CodeGenerator imageCodeGenerator(){
+        return  new ImageCodeGenerator();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "smsCodeGenerator")
+    public CodeGenerator smsCodeGenerator(){
+        return  new SmsCodeGenerator();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "mydefaultSmsSender")
+    public MydefaultSmsSender mydefaultSmsSender(){
+        return  new MydefaultSmsSender();
+    }
+}
+
+
+[ .\server\security\core\validatorcode\imagecode\filter\ValidatorCodeFilter.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode.imagecode.filter;
+
+
+
+import com.example.server.security.core.handle.MyAuthenticationFaiurelHandle;
+import com.example.server.security.core.properties.SecurityProperties;
+import com.example.server.security.core.validatorcode.ValidatorCodeException;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
+//import org.springframework.social.connect.web.HttpSessionSessionStrategy;
+
+import org.springframework.util.AntPathMatcher;
+import org.springframework.web.bind.ServletRequestBindingException;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
+//import org.springframework.util.StringUtils;
+
+/**
+ * @ClassName ValidatorCodeFilter
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.remote.security.core.properties.code.imagecode
+ * @Date 2018/9/9 15:45
+ */
+public class    ValidatorCodeFilter  extends OncePerRequestFilter implements InitializingBean {
+
+    /** 导入处理匹配失败的方法处理类*/
+    private MyAuthenticationFaiurelHandle myAuthenticationFaiurelHandle;
+
+    /** 导入处理session的类*/
+//    private HttpSessionSessionStrategy httpSessionSessionStrategy=new HttpSessionSessionStrategy();
+
+    /** 导入配置类*/
+    private SecurityProperties securityProperties;
+
+    /** 导入需要验证码验证的url*/
+    private Set<String> urls=new HashSet<String>();
+
+    /**用于path匹配的类*/
+    private AntPathMatcher antPathMatcher=new AntPathMatcher();
+
+    /**
+    *@Author Jerry.Liu
+    *@Description：配置需要验证的url;
+    *@Parameter
+    *@Date:19:54 2018/9/13
+    *@Package: com.example.remote.security.core.properties.code.imagecode.filter
+    */
+    @Override
+    public void afterPropertiesSet() throws ServletException {
+            super.afterPropertiesSet();
+            if(securityProperties.getValidatorProperties().getImageCodeProperties().getUrl()!=null) {
+                String[] configUrls = StringUtils.splitByWholeSeparatorPreserveAllTokens(securityProperties.getValidatorProperties().getImageCodeProperties().getUrl(), ",");
+                for (String url : configUrls) {
+                    urls.add(url);
+                }
+            }
+            urls.add("/authentication/form");
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
+
+//            if (StringUtils.equals("/authentication/form",httpServletRequest.getRequestURI())
+//                    &&StringUtils.endsWithIgnoreCase(httpServletRequest.getMethod(),"post")){
+
+            /**判断值，如果为true 则url需要验证码验证*/
+
+            boolean action =false;
+            for(String url:urls){
+                if(antPathMatcher.match(url,httpServletRequest.getRequestURI())) {
+                    action = true;
+                }
+            }
+               if(action){
+                try{
+//                    System.out.println("进入filter");
+                    validateImageCode(new ServletWebRequest(httpServletRequest));
+                }catch (ValidatorCodeException e){
+                    myAuthenticationFaiurelHandle.onAuthenticationFailure(httpServletRequest,httpServletResponse,e);
+                    return ;
+                }
+            }
+        filterChain.doFilter(httpServletRequest,httpServletResponse);
+    }
+
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://图形验证码的验证方法。
+    *@Parameter [servletRequest]
+    *@Date:21:12 2018/9/9
+    *@Package: com.example.remote.security.core.properties.code.imagecode
+    */
+    private void validateImageCode(ServletWebRequest servletRequest) throws ServletRequestBindingException {
+//
+//        /**从session中拿到生成的验证码信息*/
+//        ValidatorCode imageCode = (ValidatorCode) httpSessionSessionStrategy.getAttribute(servletRequest,
+//                ValidatorCodeController.getSessionImageKey());
+//        /** 从request中获取登陆提交表单的验证码信息*/
+//        String codeInRequest =ServletRequestUtils.getStringParameter(servletRequest.getRequest(),"imagecode");
+//
+//        if(StringUtils.isBlank(codeInRequest)){
+//            throw new ValidatorCodeException("输入验证码信息为空");
+//        }
+//        if(imageCode ==null){
+//            throw  new ValidatorCodeException("验证码信息不存在");
+//        }
+//        if(imageCode.getExpireTime().isBefore(LocalDateTime.now())){
+//            httpSessionSessionStrategy.removeAttribute(servletRequest,ValidatorCodeController.getSessionImageKey());
+//            throw  new ValidatorCodeException("验证码信息已经过期");
+//        }
+//        if(!StringUtils.equals(imageCode.getCode(),codeInRequest)){
+//            throw new ValidatorCodeException("验证码不匹配");
+//        }
+//        httpSessionSessionStrategy.removeAttribute(servletRequest,ValidatorCodeController.getSessionImageKey());
+
+    }
+
+    public MyAuthenticationFaiurelHandle getMyAuthenticationFaiurelHandle() {
+        return myAuthenticationFaiurelHandle;
+    }
+
+    public void setMyAuthenticationFaiurelHandle(MyAuthenticationFaiurelHandle myAuthenticationFaiurelHandle) {
+        this.myAuthenticationFaiurelHandle = myAuthenticationFaiurelHandle;
+    }
+
+    public SecurityProperties getSecurityProperties() {
+        return securityProperties;
+    }
+
+    public void setSecurityProperties(SecurityProperties securityProperties) {
+        this.securityProperties = securityProperties;
+    }
+
+    public Set<String> getUrls() {
+        return urls;
+    }
+
+    public void setUrls(Set<String> urls) {
+        this.urls = urls;
+    }
+}
+
+
+[ .\server\security\core\validatorcode\imagecode\filter\ValidatorCodeFilterConfig.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode.imagecode.filter;
+
+
+import com.example.server.security.core.handle.MyAuthenticationFaiurelHandle;
+import com.example.server.security.core.properties.SecurityProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.DefaultSecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
+
+/**
+ * @ClassName ValidatorCodeFilterConfig
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.remote.security.core.properties.code.imagecode.filter
+ * @Date 2018/9/13 19:42
+ */
+@Component
+public class ValidatorCodeFilterConfig extends SecurityConfigurerAdapter<DefaultSecurityFilterChain,HttpSecurity> {
+
+//    @Autowired
+//    private MyAnthenticationSuccessHandle myAnthenticationSuccessHandle;
+    @Autowired
+    private MyAuthenticationFaiurelHandle myAuthenticationFaiurelHandle;
+
+    @Autowired
+    private SecurityProperties securityProperties;
+
+    @Override
+    public void configure(HttpSecurity http) throws Exception {
+        ValidatorCodeFilter validatorCodeFilter = new ValidatorCodeFilter();
+        validatorCodeFilter.setMyAuthenticationFaiurelHandle(myAuthenticationFaiurelHandle);
+        validatorCodeFilter.setSecurityProperties(securityProperties);
+        validatorCodeFilter.afterPropertiesSet();
+        http.addFilterBefore(validatorCodeFilter,UsernamePasswordAuthenticationFilter.class);
+    }
+}
+
+
+[ .\server\security\core\validatorcode\imagecode\ImageCode.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode.imagecode;
+
+
+
+import com.example.server.security.core.validatorcode.basecode.ValidatorCode;
+
+import java.awt.image.BufferedImage;
+import java.time.LocalDateTime;
+
+/**
+ * @ClassName ImageCode
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.conferencedemo.security.core.validatorcode.imagecode
+ * @Date 2018/9/19 21:06
+ */
+public class ImageCode extends ValidatorCode {
+
+
+    /** 验证框的图片*/
+    private BufferedImage bufferedImage;
+
+
+
+
+    /** 构造函数*/
+    public ImageCode(){}
+    public ImageCode(BufferedImage bufferedImage, String code, LocalDateTime expireTime) {
+        super(code,expireTime);
+        this.bufferedImage = bufferedImage;
+    }
+    /** 传入的过期时间是秒数*/
+    public ImageCode(BufferedImage bufferedImage, String code, int expireTime) {
+        super(code,expireTime);
+        this.bufferedImage = bufferedImage;
+
+//        this.code = code;
+//        this.expireTime = LocalDateTime.now().plusSeconds(expireTime);
+    }
+
+
+    /** getter setter函数*/
+    public BufferedImage getBufferedImage() {
+        return bufferedImage;
+    }
+
+    public void setBufferedImage(BufferedImage bufferedImage) {
+        this.bufferedImage = bufferedImage;
+    }
+
+    @Override
+    public BufferedImage showImage(){
+        return bufferedImage;
+
+    }
+
+}
+
+[ .\server\security\core\validatorcode\imagecode\ImageCodeGenerator.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode.imagecode;
+
+
+import com.example.server.security.core.properties.SecurityProperties;
+import com.example.server.security.core.validatorcode.basecode.CodeGenerator;
+import com.example.server.security.core.validatorcode.basecode.ValidatorCode;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.context.request.ServletWebRequest;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.Random;
+
+/**
+ * @ClassName ImageCodeGenerator
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.conferencedemo.security.core.validatorcode.imagecode
+ * @Date 2018/9/19 21:08
+ */
+public class ImageCodeGenerator implements CodeGenerator {
+    /** 注入配置类*/
+    @Autowired
+    private SecurityProperties securityProperties;
+
+    /**
+     *@Author Jerry.Liu
+     *@Description://TODO
+     *@Parameter [httpServletRequest]
+     *@Date:21:46 2018/9/9
+     *@Package: com.example.remote.security.core.properties.code.imagecode
+     */
+    @Override
+    public ValidatorCode createCode(ServletWebRequest httpServletRequest) {
+        //        int width=securityProperties.getValidatorProperties().getImageCodeproperties().getWidth();
+        /**从请求中找，若找不到，则用默认配置值*/
+        int width=ServletRequestUtils.getIntParameter(httpServletRequest.getRequest(),"width",securityProperties.getValidatorProperties().getImageCodeProperties().getWidth());
+//        int height=securityProperties.getValidatorProperties().getImageCodeproperties().getHeight();
+        int height=ServletRequestUtils.getIntParameter(httpServletRequest.getRequest(),"height",securityProperties.getValidatorProperties().getImageCodeProperties().getHeight());
+        BufferedImage image=new BufferedImage(width,height,BufferedImage.TYPE_INT_RGB);
+
+        Graphics graphics=image.getGraphics();
+        Random random=new Random();
+        graphics.setColor(getRandColor(200,250));
+        graphics.fillRect(0,0,width,height);
+        graphics.setFont(new Font("Times New Roman",Font.ITALIC,20));
+        graphics.setColor(getRandColor(160,200));
+
+        /** 往验证码框中加入障碍条纹*/
+        for (int i=0;i<155;i++){
+            int x=random.nextInt(width);
+            int y=random.nextInt(height);
+            int x1=random.nextInt(12);
+            int y1=random.nextInt(12);
+            graphics.drawLine(x,y,x+x1,y+y1);
+        }
+        String randomCode="";
+
+        for (int i = 0; i<securityProperties.getValidatorProperties().getImageCodeProperties().getLength(); i++){
+            String rand=String.valueOf(random.nextInt(10));
+            randomCode+=rand;
+            graphics.setColor(new Color(20+random.nextInt(110),20+random.nextInt(110),20+random.nextInt(110)));
+            graphics.drawString(rand,13*i+6,16);
+        }
+        graphics.dispose();
+        return new ImageCode(image,randomCode,securityProperties.getValidatorProperties().getImageCodeProperties().getExpiretime());
+    }
+
+    /**
+     *@Author Jerry.Liu
+     *@Description://TODO
+     *@Parameter
+     *@Date:16:18 2018/9/9
+     *@Package: com.example.remote.security.core.properties.code.imagecode
+     */
+    public static Color getRandColor(int min, int max) {
+        Random r=new Random();
+        if (min > 255){
+            min = 255;
+        }
+        if (max > 255) {
+            max = 255;
+        }
+        int red = r.nextInt(max - min) + min;
+        int green = r.nextInt(max - min) + min;
+        int blue = r.nextInt(max - min) + min;
+        return new Color(red, green, blue);
+    }
+}
+
+
+[ .\server\security\core\validatorcode\smscode\filter\SmsCodeFilter.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode.smscode.filter;
+
+
+import com.example.server.common.entity.ValidatorName;
+import com.example.server.common.redis.RedisService;
+import com.example.server.security.core.handle.MyAuthenticationFaiurelHandle;
+import com.example.server.security.core.handle.MyAuthenticationSuccessHandle;
+import com.example.server.security.core.properties.SecurityProperties;
+import com.example.server.security.core.validatorcode.ValidatorCodeController;
+import com.example.server.security.core.validatorcode.ValidatorCodeException;
+
+import com.example.server.security.core.validatorcode.smscode.SmsCode;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
+//import org.springframework.social.connect.web.HttpSessionSessionStrategy;
+
+import org.springframework.util.AntPathMatcher;
+import org.springframework.web.bind.ServletRequestBindingException;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * @ClassName SmsCodeFilter
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.remote.security.core.properties.code.smscode.filter
+ * @Date 2018/9/15 15:31
+ */
+public class SmsCodeFilter extends OncePerRequestFilter implements InitializingBean {
+
+    /**
+     * 导入处理匹配失败的方法处理类
+     */
+    private MyAuthenticationFaiurelHandle myAuthenticationFaiurelHandle;
+
+    private MyAuthenticationSuccessHandle myAuthenticationSuccessHandle;
+
+    /**
+     * 导入处理session的类
+     */
+//    private HttpSessionSessionStrategy httpSessionSessionStrategy = new HttpSessionSessionStrategy();
+
+    /**
+     * 导入配置类
+     */
+    private SecurityProperties securityProperties;
+
+    /**
+     * 导入需要验证码验证的url
+     */
+    private Set<String> urls = new HashSet<String>();
+
+
+    /**
+     * 用于path匹配的类
+     */
+    private AntPathMatcher antPathMatcher = new AntPathMatcher();
+    private RedisService redisService;
+
+    /**
+     * @Author Jerry.Liu
+     * @Description：配置需要验证的url;
+     * @Parameter
+     * @Date:19:54 2018/9/13
+     * @Package: com.example.remote.security.core.properties.code.imagecode.filter
+     */
+    @Override
+    public void afterPropertiesSet() throws ServletException {
+        super.afterPropertiesSet();
+        if (securityProperties.getValidatorProperties().getSmsCodeProperties().getUrl() != null) {
+            String[] configUrls = StringUtils.splitByWholeSeparatorPreserveAllTokens(securityProperties.getValidatorProperties().getSmsCodeProperties().getUrl(), ",");
+            for (String url : configUrls) {
+                urls.add(url);
+            }
+        }
+        urls.add("/authentication/smsform");
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
+
+//            if (StringUtils.equals("/authentication/form",httpServletRequest.getRequestURI())
+//                    &&StringUtils.endsWithIgnoreCase(httpServletRequest.getMethod(),"post")){
+
+        /**判断值，如果为true 则url需要验证码验证*/
+        if(httpServletRequest.getMethod().equals("OPTIONS")){
+            filterChain.doFilter(httpServletRequest, httpServletResponse);
+            return;
+
+        }
+        boolean action = false;
+        for (String url : urls) {
+            if (antPathMatcher.match(url, httpServletRequest.getRequestURI())) {
+                action = true;
+                break;
+            }
+        }
+        if (action) {
+            try {
+//                    System.out.println("进入filter");
+                validateSmsCode(new ServletWebRequest(httpServletRequest));
+            } catch (ValidatorCodeException e) {
+                myAuthenticationFaiurelHandle.onAuthenticationFailure(httpServletRequest, httpServletResponse, e);
+                return;
+            }
+        }
+        filterChain.doFilter(httpServletRequest, httpServletResponse);
+    }
+
+
+    /**
+     * @Author Jerry.Liu
+     * @Description://图形验证码的验证方法。
+     * @Parameter [servletRequest]
+     * @Date:21:12 2018/9/9
+     * @Package: com.example.remote.security.core.properties.code.imagecode
+     */
+    private void validateSmsCode(ServletWebRequest servletRequest) throws ServletRequestBindingException {
+
+        /**从session中拿到生成的验证码信息*/
+//       SmsCode smsCode = (SmsCode) httpSessionSessionStrategy.getAttribute(servletRequest,
+//                ValidatorCodeController.getSessionSmsKey());
+        SmsCode smsCode =(SmsCode)redisService.getValue(ValidatorName.getSmsKey());
+//        String smsCode=(String)redisService.getValue("123456");
+        /** 从request中获取登陆提交表单的验证码信息*/
+        String codeInRequest = ServletRequestUtils.getStringParameter(servletRequest.getRequest(), "smscode");
+
+        if (StringUtils.isBlank(codeInRequest)) {
+            throw new ValidatorCodeException("输入验证码信息为空");
+        }
+        if (smsCode == null) {
+            System.out.println("验证码信息不存在");
+            throw new ValidatorCodeException("验证码信息不存在");
+        }
+        if (smsCode.getExpireTime().isBefore(LocalDateTime.now())) {
+//            httpSessionSessionStrategy.removeAttribute(servletRequest, ValidatorCodeController.getSessionImageKey());
+//            redisService.delete("code");
+            redisService.delete(ValidatorName.getSmsKey());
+            throw new ValidatorCodeException("验证码信息已经过期");
+        }
+        if (StringUtils.equals(smsCode.getCode(), codeInRequest)) {
+            redisService.delete(ValidatorName.getSmsKey());
+
+        }
+        else {
+//            System.out.println("验证码不匹配");
+            throw new ValidatorCodeException("验证码不匹配");
+        }
+//        if(!smsCode.getCode().equals(codeInRequest)){
+//            throw new ValidatorCodeException("验证码不匹配");
+//        }
+//        httpSessionSessionStrategy.removeAttribute(servletRequest, ValidatorCodeController.getSessionImageKey());
+
+
+    }
+
+    public MyAuthenticationFaiurelHandle getMyAuthenticationFaiurelHandle() {
+        return myAuthenticationFaiurelHandle;
+    }
+
+    public void setMyAuthenticationFaiurelHandle(MyAuthenticationFaiurelHandle myAuthenticationFaiurelHandle) {
+        this.myAuthenticationFaiurelHandle = myAuthenticationFaiurelHandle;
+    }
+
+    public SecurityProperties getSecurityProperties() {
+        return securityProperties;
+    }
+
+    public void setSecurityProperties(SecurityProperties securityProperties) {
+        this.securityProperties = securityProperties;
+    }
+
+    public MyAuthenticationSuccessHandle getMyAnthenticationSuccessHandle() {
+        return myAuthenticationSuccessHandle;
+    }
+
+    public void setMyAnthenticationSuccessHandle(MyAuthenticationSuccessHandle myAnthenticationSuccessHandle) {
+        this.myAuthenticationSuccessHandle = myAnthenticationSuccessHandle;
+    }
+
+    public Set<String> getUrls() {
+        return urls;
+    }
+
+    public void setUrls(Set<String> urls) {
+        this.urls = urls;
+    }
+
+
+
+    public RedisService getRedisService() {
+        return redisService;
+    }
+
+    public void setRedisService(RedisService redisService) {
+        this.redisService = redisService;
+    }
+}
+
+
+[ .\server\security\core\validatorcode\smscode\filter\SmsCodeFilterConfig.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode.smscode.filter;
+
+
+
+import com.example.server.common.redis.RedisService;
+import com.example.server.security.core.handle.MyAuthenticationFaiurelHandle;
+import com.example.server.security.core.properties.SecurityProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.DefaultSecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
+
+/**
+ * @ClassName SmsCodeFilterConfig
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.remote.security.core.properties.code.smscode.filter
+ * @Date 2018/9/15 15:38
+ */
+@Component
+public class SmsCodeFilterConfig extends SecurityConfigurerAdapter<DefaultSecurityFilterChain,HttpSecurity> {
+    @Autowired
+    private MyAuthenticationFaiurelHandle myAuthenticationFaiurelHandle;
+
+    @Autowired
+    private SecurityProperties securityProperties;
+//
+    @Autowired
+    private RedisService redisService;
+    @Override
+    public void configure(HttpSecurity http) throws Exception {
+        SmsCodeFilter smsCodeFilter =new SmsCodeFilter();
+        smsCodeFilter.setMyAuthenticationFaiurelHandle(myAuthenticationFaiurelHandle);
+        smsCodeFilter.setSecurityProperties(securityProperties);
+        smsCodeFilter.setRedisService(redisService);
+        smsCodeFilter.afterPropertiesSet();
+        http.addFilterBefore(smsCodeFilter,UsernamePasswordAuthenticationFilter.class);
+    }
+}
+
+
+[ .\server\security\core\validatorcode\smscode\MydefaultSmsSender.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode.smscode;
+
+
+import com.example.server.security.core.validatorcode.basecode.ValidatorCode;
+
+/**
+ * @ClassName MydefaultSmsSender
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.conferencedemo.security.core.validatorcode.smscode
+ * @Date 2018/9/19 21:37
+ */
+public class MydefaultSmsSender implements SmsCodeSender {
+    @Override
+    public void sendCode(String phone, ValidatorCode code) {
+        System.out.println("手机号码为："+phone+",验证码为："+code.getCode());
+    }
+}
+
+
+[ .\server\security\core\validatorcode\smscode\SmsCode.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode.smscode;
+
+
+
+import com.example.server.security.core.validatorcode.basecode.ValidatorCode;
+
+import java.time.LocalDateTime;
+
+/**
+ * @ClassName SmsCode
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.conferencedemo.security.core.validatorcode.smscode
+ * @Date 2018/9/19 21:07
+ */
+public class SmsCode extends ValidatorCode {
+    public SmsCode(String code, LocalDateTime expireTime) {
+        super(code, expireTime);
+    }
+
+    public SmsCode(String code, int expireSecond) {
+        super(code, expireSecond);
+    }
+
+    public SmsCode() {
+
+    }
+}
+
+
+[ .\server\security\core\validatorcode\smscode\SmsCodeGenerator.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode.smscode;
+
+
+import com.example.server.security.core.properties.SecurityProperties;
+import com.example.server.security.core.validatorcode.basecode.CodeGenerator;
+import org.apache.commons.lang.RandomStringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.context.request.ServletWebRequest;
+
+/**
+ * @ClassName SmsCodeGenerator
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.conferencedemo.security.core.validatorcode.smscode
+ * @Date 2018/9/19 21:34
+ */
+public class SmsCodeGenerator implements CodeGenerator {
+    @Autowired
+    private SecurityProperties securityProperties;
+
+    @Override
+    public SmsCode createCode(ServletWebRequest httpServletRequest) {
+        int length=ServletRequestUtils.getIntParameter(httpServletRequest.getRequest(),"length",securityProperties.getValidatorProperties().getSmsCodeProperties().getLength());
+        return  new SmsCode(RandomStringUtils.randomNumeric(length),securityProperties.getValidatorProperties().getSmsCodeProperties().getExpiretime());
+    }
+}
+
+
+
+[ .\server\security\core\validatorcode\smscode\SmsCodeSender.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode.smscode;
+
+
+import com.example.server.security.core.validatorcode.basecode.ValidatorCode;
+
+/**
+ * @ClassName SmsCodeSender
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.conferencedemo.security.core.validatorcode.smscode
+ * @Date 2018/9/19 21:36
+ */
+public interface SmsCodeSender {
+    public void sendCode(String phone, ValidatorCode code);
+}
+
+
+[ .\server\security\core\validatorcode\ValidatorCodeController.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode;
+
+
+import com.example.server.common.entity.ValidatorName;
+import com.example.server.common.redis.RedisService;
+import com.example.server.security.core.validatorcode.basecode.CodeGenerator;
+import com.example.server.security.core.validatorcode.basecode.ValidatorCode;
+import com.example.server.security.core.validatorcode.smscode.SmsCodeSender;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.web.bind.ServletRequestBindingException;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.ServletWebRequest;
+
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Map;
+
+
+/**
+ * @ClassName ValidatorCodeController
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.remote.security.core.properties.code.imagecode
+ * @Date 2018/9/9 14:53
+ */
+@RestController
+public class ValidatorCodeController {
+
+    /** 注入配置类*/
+//    @Autowired
+//    @Qualifier("imageCodeGenerator")
+//    private CodeGenerator imageCodeGenerator;
+//
+//    @Autowired
+//    @Qualifier("smsCodeGenerator")
+//    private CodeGenerator smsCodeGenerator;
+
+    @Autowired
+    private Map<String,CodeGenerator> map;
+
+    @Autowired
+    private SmsCodeSender mydefaultSmsSender;
+
+    @Autowired
+    private RedisService redisService;
+
+    /**获取session*/
+//    private SessionStrategy sessionStrategy=new HttpSessionSessionStrategy();
+
+//    private  static  final String SESSION_IMAGE_KEY="SESSION_KEY_IMAGE_CODE";
+//
+//    private  static  final String SESSION_SMS_KEY="SESSION_KEY_SMS_CODE";
+//    private  static  final String SESSION_KEY="SESSION_KEY_CODE";
+
+//    @GetMapping("/code/image")
+//    public  void createCode(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException {
+//       ImageCode imageCode = (ImageCode) imageCodeGenerator.createCode(new ServletWebRequest(httpServletRequest));
+//        /** 往sesseion里面加CodeImage*/
+//        sessionStrategy.setAttribute(new ServletWebRequest(httpServletRequest),SESSION_IMAGE_KEY, imageCode);
+//        /** 输入验证码图片*/
+//        ImageIO.write(imageCode.getBufferedImage(),"JPEG",httpServletResponse.getOutputStream());
+//    }
+//
+//    @GetMapping("/code/sms")
+//    public  void createSmsCode(HttpServletRequest httpServletRequest,HttpServletResponse httpServletResponse) throws ServletRequestBindingException {
+//        SmsCode smsCode = (SmsCode) smsCodeGenerator.createCode(new ServletWebRequest(httpServletRequest));
+//        sessionStrategy.setAttribute(new ServletWebRequest(httpServletRequest),SESSION_SMS_KEY,smsCode);
+//        String phone=ServletRequestUtils.getRequiredStringParameter(httpServletRequest,"phone");
+//        mydefaultSmsSender.sendCode(phone,smsCode);
+//    }
+
+    @GetMapping("/code/{type}/{deviceId}")
+    public  void createCode(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, @PathVariable String type,@PathVariable String deviceId) throws IOException, ServletRequestBindingException {
+        CodeGenerator codeGenerator = map.get(type+"CodeGenerator");
+        ValidatorCode validatorCode = codeGenerator.createCode(new ServletWebRequest(httpServletRequest));
+        if(type.equals("sms")){
+//            sessionStrategy.setAttribute(new ServletWebRequest(httpServletRequest),SESSION_SMS_KEY, validatorCode);
+            ValidatorName.setSmsKey(deviceId);
+            redisService.setKey(deviceId,validatorCode);
+            String phone=ServletRequestUtils.getRequiredStringParameter(httpServletRequest,"phone");
+            mydefaultSmsSender.sendCode(phone,validatorCode);
+        }
+        if(type.equals("image")){
+            ValidatorCode code =new ValidatorCode();
+            code.setCode(validatorCode.getCode());
+            code.setExpireTime(validatorCode.getExpireTime());
+//            sessionStrategy.setAttribute(new ServletWebRequest(httpServletRequest),SESSION_IMAGE_KEY, code);
+            ImageIO.write(validatorCode.showImage(),"JPEG",httpServletResponse.getOutputStream());
+        }
+
+    }
+
+
+
+    /**getter setter*/
+//    public SessionStrategy getSessionStrategy() {
+//        return sessionStrategy;
+//    }
+//
+//    public void setSessionStrategy(SessionStrategy sessionStrategy) {
+//        this.sessionStrategy = sessionStrategy;
+//    }
+
+//    public static String getSessionImageKey() {
+//        return SESSION_IMAGE_KEY;
+//    }
+//
+//    public static String getSessionSmsKey() {
+//        return SESSION_SMS_KEY;
+//    }
+//
+//    public static String getSessionKey() {
+//        return SESSION_KEY;
+//    }
+}
+
+
+[ .\server\security\core\validatorcode\ValidatorCodeException.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security.core.validatorcode;
+
+
+import org.springframework.security.core.AuthenticationException;
+
+/**
+ * @ClassName ValidatorCodeException
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.remote.security.core.properties.code.imagecode
+ * @Date 2018/9/9 15:57
+ */
+public class ValidatorCodeException extends AuthenticationException {
+    public ValidatorCodeException(String msg, Throwable t) {
+        super(msg, t);
+    }
+
+    public ValidatorCodeException(String msg) {
+        super(msg);
+    }
+}
+
+
+[ .\server\security\MyUserDetailsService.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security;
+
+
+
+import com.example.server.entity.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+/**
+ * @ClassName MyUserDetailsService
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server
+ * @Date 2019/2/21 22:57
+ */
+@Component
+public class MyUserDetailsService implements UserDetailsService {
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserRepository userRepository;
+
+
+    @Override
+    public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
+        if (userRepository.existsByName(s)) {
+            com.example.server.entity.User user = userRepository.findOneByName(s);
+            if(user.getRole().equals("user")) {
+                return new User(s, user.getPassword(), AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_USER"));
+            }else {
+                return new  User(s, user.getPassword(), AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_ADMIN"));
+            }
+        }
+        else {
+            throw  new UsernameNotFoundException("不存在的用户名");
+        }
+    }
+}
+
+
+[ .\server\security\SecurityConfig.java]  
+--------------------------------------------------------------------------------
+package com.example.server.security;
+
+import com.example.server.common.filter.CorsFilterConfig;
+import com.example.server.security.core.smslogin.SmsAuthenticationFilterConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+/**
+ * @ClassName Config
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server
+ * @Date 2019/2/21 22:45
+ */
+@Configuration
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+//    @Autowired
+//    private SmsAuthenticationFilterConfig smsAuthenticationFilterConfig;
+//    @Autowired
+//    private CorsFilterConfig corsFilterConfig;
+
+
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
+
+}
+
+
+[ .\server\ServerApplication.java]  
+--------------------------------------------------------------------------------
+package com.example.server;
+
+import com.example.server.entity.Conference;
+import com.example.server.entity.User;
+
+import com.example.server.entity.repository.ConferenceRepository;
+import com.example.server.entity.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.sql.SQLOutput;
+import java.util.Set;
+
+@SpringBootApplication
+@ServletComponentScan
+@EnableCaching
+@RestController
+public class ServerApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(ServerApplication.class, args);
+
+    }
+
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    ConferenceRepository conferenceRepository;
+
+    @GetMapping("/users")
+    public String user(){
+        User user;
+        user = userRepository.findOneByName("tom");
+        Set<Conference> conferenceSet=user.getConferenceSet();
+        Conference conference=conferenceRepository.findOneById("0001");
+        Set<User>users=conference.getUserSet();
+//        System.out.println(conferenceSet);
+
+        for(Conference value:conferenceSet){
+            System.out.println(value.getName()+"eeeee");
+        }
+        for(User value:users){
+            System.out.println(value.getName()+"hhhh");
+        }
+        return "hello";
+    }
+
+}
+
+
+[ .\server\service\ConferenceService.java]  
+--------------------------------------------------------------------------------
+package com.example.server.service;
+
+import com.example.server.entity.Conference;
+import com.example.server.entity.User;
+
+import java.util.List;
+import java.util.Set;
+
+/**
+ * @ClassName ConferenceService
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.service
+ * @Date 2019/3/6 9:15
+ */
+public interface ConferenceService {
+    public  boolean createConference(Conference conference);
+    public List<Conference> findAll();
+    public  Conference findOneByConferenceId(String conferenceId);
+    public Set<User>  attendConferenceUsers(String conferenceId);
+
+
+}
+
+
+[ .\server\service\impl\ConferenceServiceImpl.java]  
+--------------------------------------------------------------------------------
+package com.example.server.service.impl;
+
+import com.example.server.common.uuid.IdCreator;
+import com.example.server.entity.Conference;
+import com.example.server.entity.User;
+import com.example.server.entity.repository.ConferenceRepository;
+import com.example.server.service.ConferenceService;
+import com.fasterxml.jackson.annotation.JsonView;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
+
+/**
+ * @ClassName ConferenceServiceImpl
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.service.impl
+ * @Date 2019/3/6 9:18
+ */
+@Service
+public class ConferenceServiceImpl implements ConferenceService {
+    @Autowired
+    private ConferenceRepository conferenceRepository;
+    @Autowired
+    private IdCreator idCreator;
+    @Override
+    public boolean createConference(Conference conference) {
+            conference.setId(idCreator.createId());
+            conferenceRepository.save(conference);
+            return  true;
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://TODO
+    *@Parameter
+    *@Date:17:45 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
+    @Override
+    public List<Conference> findAll() {
+            return conferenceRepository.findAll();
+    }
+
+    @Override
+    public Conference findOneByConferenceId(String conferenceId) {
+        return conferenceRepository.findOneById(conferenceId);
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://输出参加会议的人员。
+    **@Parameter
+    *@Date:17:49 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
+    @Override
+    public Set<User> attendConferenceUsers(String conferenceId) {
+        Conference conference= conferenceRepository.findOneById(conferenceId);
+        return  conference.getUserSet();
+    }
+
+
+}
+
+
+[ .\server\service\impl\PaperServiceImpl.java]  
+--------------------------------------------------------------------------------
+package com.example.server.service.impl;
+
+import com.example.server.common.uuid.IdCreator;
+import com.example.server.entity.Paper;
+import com.example.server.entity.repository.PaperRepository;
+import com.example.server.service.PaperService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.List;
+
+/**
+ * @ClassName PaperServiceImpl
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.service.impl
+ * @Date 2019/3/7 10:58
+ */
+@Service
+public class PaperServiceImpl implements PaperService {
+    @Autowired
+    private PaperRepository paperRepository;
+    @Autowired
+    private IdCreator idCreator;
+    @Override
+    public boolean create(Paper paper) {
+
+        paper.setPaperId(idCreator.createId());
+//        paper.setPaperSubmitTime(new Date());
+//            paperRepository.save(paper);
+            return  true;
+    }
+
+    @Override
+    public Paper findOneByPaperId(String paperId) {
+        return  paperRepository.findOneByPaperId(paperId);
+    }
+
+
+    @Override
+    public List<Paper> findAllByUserName(String userName) {
+        return paperRepository.findAllByUserName(userName);
+    }
+
+    @Override
+    public List<Paper> findAllByConferenceId(String conferenceId) {
+        return  paperRepository.findAllByConferenceId(conferenceId);
+    }
+
+    @Override
+    public boolean addComment(Paper paper,String comment) {
+
+        paper.setPaperComment(comment);
+        paperRepository.save(paper);
+        return true;
+    }
+
+    @Override
+    public boolean exitByConferenceAndUserName(String conferenceId, String userName) {
+        return  paperRepository.existsByConferenceIdAndUserName(conferenceId,userName);
+    }
+
+    @Override
+    public List<Paper> findAll(){
+        return paperRepository.findAll();
+    }
+
+    @Override
+    public Paper findOneByConferenceIdAndUserName(String conferenceId,String userName) {
+        return  paperRepository.findOneByConferenceIdAndUserName(conferenceId,userName);
+    }
+
+    @Override
+    public Paper save(Paper paper) {
+        return  paperRepository.save(paper);
+    }
+}
+
+
+[ .\server\service\impl\UserServiceImpl.java]  
+--------------------------------------------------------------------------------
+package com.example.server.service.impl;
+
+import com.example.server.common.uuid.IdCreator;
+import com.example.server.entity.Conference;
+import com.example.server.entity.User;
+import com.example.server.entity.repository.ConferenceRepository;
+import com.example.server.entity.repository.UserRepository;
+import com.example.server.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
+
+/**
+ * @ClassName UserServiceImpl
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.service.impl
+ * @Date 2019/2/22 17:36
+ */
+@Service
+public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private ConferenceRepository conferenceRepository;
+    @Autowired
+    private IdCreator idCreator;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://用户注册
+    *@Parameter
+    *@Date:9:57 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
+    @Override
+    public boolean signup( User user) {
+        if(userRepository.findOneByName(user.getName())==null) {
+            user.setId(idCreator.createId());
+            user.setRole("user");
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            userRepository.save(user);
+            return true;
+        }
+        else  {
+            return false;
+        }
+    }
+
+    /**
+     *@Author Jerry.Liu
+     *@Description://查找一个用户信息，并且返回
+     *@Date:23:53 2019/2/13
+     *@Package: com.example.conferencedemo.user.service.impl
+     */
+    @Override
+    public User showSimple(String userName) {
+        return userRepository.findOneByName(userName);
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://用户报名参加会议，往关联表插入一条记录。
+     **@Parameter
+    *@Date:9:58 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
+    @Override
+    public boolean attendConference(String userName,String conferenceId) {
+        if(userRepository.existsByName(userName)&&conferenceRepository.existsById(conferenceId)){
+            User user=userRepository.findOneByName(userName);
+            Conference conference =conferenceRepository.findOneById(conferenceId);
+            user.getConferenceSet().add(conference);
+            userRepository.save(user);
+            return  true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean quitConference(String userName, String conferenceId) {
+        if(userRepository.existsByName(userName)&&conferenceRepository.existsById(conferenceId)){
+            if (attendOrNot(userName,conferenceId)) {
+                User user = userRepository.findOneByName(userName);
+                Conference conference = conferenceRepository.findOneById(conferenceId);
+//            user.getConferenceSet().add(conference);
+                user.getConferenceSet().remove(conference);
+                userRepository.save(user);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://输出用户创建的会议
+    *@Parameter
+    *@Date:10:00 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
+    @Override
+    public List<Conference> showMyCreateConference(String userName) {
+        return conferenceRepository.findAllByCreateName(userName);
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://输入userName,输出该user参加的会议信息。
+    *@Parameter
+    *@Date:10:00 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
+    @Override
+    public Set<Conference> showMyAttendConference(String userName) {
+        User user =userRepository.findOneByName(userName);
+        return  user.getConferenceSet();
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://是否参加此会议，参加放回true；
+    *@Parameter
+    *@Date:13:53 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
+    @Override
+    public boolean attendOrNot(String userName, String conferenceId) {
+        User user =userRepository.findOneByName(userName);
+        for(Conference conference:user.getConferenceSet()) {
+            if (conference.getId().equals(conferenceId)) {
+                return true;
+            }
+        }
+        return  false;
+
+    }
+
+    /**
+    *@Author Jerry.Liu
+    *@Description://输入用户username，以及会议id 返回是否是该用户创建的会议情况，是返回true；
+  *@Parameter
+    *@Date:17:52 2019/3/7
+    *@Package: com.example.server.service.impl
+    */
+    @Override
+    public boolean createOrNot(String userName, String conferenceId) {
+        Conference conference=conferenceRepository.findOneById(conferenceId);
+        if (conference.getCreateName().equals(userName)){
+            return  true;
+        }
+        return false;
+    }
+
+    @Override
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+}
+
+
+
+[ .\server\service\PaperService.java]  
+--------------------------------------------------------------------------------
+package com.example.server.service;
+
+import com.example.server.entity.Paper;
+
+import java.util.List;
+
+/**
+ * @ClassName PaperService
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.service
+ * @Date 2019/3/7 10:57
+ */
+public interface PaperService {
+    public boolean create(Paper paper);
+    public Paper findOneByPaperId(String paperId);
+    public List<Paper> findAllByUserName(String userName);
+    public  List<Paper> findAllByConferenceId(String conferenceId);
+    public  boolean addComment(Paper paper,String comment);
+    public  boolean exitByConferenceAndUserName(String conferenceId, String userName);
+    public List<Paper> findAll();
+    public Paper findOneByConferenceIdAndUserName(String conferenceId,String userName);
+    public  Paper save(Paper paper);
+}
+
+
+[ .\server\service\UserService.java]  
+--------------------------------------------------------------------------------
+package com.example.server.service;
+
+import com.example.server.entity.Conference;
+import com.example.server.entity.User;
+
+import java.util.List;
+import java.util.Set;
+
+/**
+ * @ClassName UserService
+ * @Author:Jerry.Liu;
+ * @Description://TODO
+ * @Package com.example.server.service
+ * @Date 2019/2/22 17:36
+ */
+public interface UserService {
+    public boolean signup(User user);
+    public User  showSimple(String userName);
+    public boolean attendConference(String userName,String conferenceId);
+    public  boolean quitConference(String userName,String conferenceId);
+    public List<Conference> showMyCreateConference(String userName);
+    public Set<Conference> showMyAttendConference(String userName);
+    public  boolean attendOrNot(String userName,String conferenceId);
+    public  boolean createOrNot(String userName,String conferenceId);
+    public  List<User> findAll();
+}
+
+
+[ .\server\ServletInitializer.java]  
+--------------------------------------------------------------------------------
+package com.example.server;
+
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+
+/**
+*@Author Jerry.Liu
+*@Description://TODO
+*@Parameter
+*@Date:16:13 2019/2/27
+*@Package: com.example.server
+*/
+public class ServletInitializer extends SpringBootServletInitializer {
+
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(ServerApplication.class);
+    }
+
+}
+
+[ .\solve.py]  
+--------------------------------------------------------------------------------
+import os
+
+dest_fname = 'Result.txt'
+
+def write_file(path_name):
+    global dest_fname
+    with open(dest_fname, 'a+',encoding='UTF-8') as fdes:
+        head = '[ ' + path_name + ']  ' + '\n' + '-' * 80 + '\n'
+        fdes.write(head.center(10, "-"))
+        with open(path_name, 'r',encoding='UTF-8') as fsrc:
+            for line in fsrc.readlines():
+                fdes.write(line)
+        fdes.write('\n'*2)
+        
+
+def dfs(base_path):
+    for item in os.listdir(base_path):
+        path = os.path.join(base_path, item)
+        if os.path.isfile(path):
+            write_file(path)
+        else:
+            dfs(path)
+
+dfs('.')
+

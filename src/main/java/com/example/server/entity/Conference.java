@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
@@ -49,6 +50,7 @@ public class Conference implements Serializable {
     /**会议联系人信息*/
     private String  contactName;
 
+    @Email
     private  String contactEmail;
 
     private String contactPhone;

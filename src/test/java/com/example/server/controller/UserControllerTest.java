@@ -46,7 +46,7 @@ public class UserControllerTest {
 
     @Test
     public void signup() throws Exception {
-        User user = new User("caicai123456", "123456", "13322989131", "tomomm@qq.com");
+        User user = new User("caicai123456", "123456", "13322989131", "tomomm");
         String result = mvc.perform(post("/user/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(user)))
@@ -58,7 +58,7 @@ public class UserControllerTest {
     @Test
     public void create() throws Exception {
         Conference conference =new Conference("年会","xxx-xx-xxx","descroption1232312",new Date(),"jerry",
-                "erwin","24423132@qq.com","123123212131");
+                "erwin","24423132","123123212131");
         String result = mvc.perform(post("/conference/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(conference)))
