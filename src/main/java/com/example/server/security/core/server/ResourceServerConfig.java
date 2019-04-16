@@ -65,7 +65,7 @@ public class ResourceServerConfig  extends ResourceServerConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/error","/user/signup","/social/user","/authentication/form","/loginBuf").permitAll()
-                .antMatchers("/authentication/require","/code/**","/signout","/session/invalid","/oauth/**","/oauth/token","/index.html","/","/conference/all","/file/download/**","/user/changePassword","/user/checkPhone").permitAll()
+                .antMatchers("/authentication/require","/authentication/smsform","/code/**","/signout","/session/invalid","/oauth/**","/oauth/token","/index.html","/","/conference/all","/file/download/**","/user/changePassword","/user/checkPhone").permitAll()
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                 .antMatchers("/manager/**").hasRole("ADMIN")
 //                .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()

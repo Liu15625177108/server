@@ -15,7 +15,7 @@ import java.net.URLEncoder;
  * @Package com.example.remote.common.sender
  * @Date 2018/9/13 9:25
  */
-//@Component("mydefaultSmsSender")
+@Component("mydefaultSmsSender")
 public class MySmsSender implements SmsCodeSender {
 
     private static String operation = "/industrySMS/sendSMS";
@@ -29,8 +29,8 @@ public class MySmsSender implements SmsCodeSender {
         String to=phone;
         String tmpSmsContent = null;
         try{
-            smsContent=smsContent+code.getCode();
-            tmpSmsContent = URLEncoder.encode(smsContent, "UTF-8");
+            String message=smsContent+code.getCode();
+            tmpSmsContent = URLEncoder.encode(message, "UTF-8");
         }catch(Exception e){
 
         }

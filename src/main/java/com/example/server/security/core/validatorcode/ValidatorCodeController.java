@@ -82,7 +82,7 @@ public class ValidatorCodeController {
         ValidatorCode validatorCode = codeGenerator.createCode(new ServletWebRequest(httpServletRequest));
         if(type.equals("sms")){
 //            sessionStrategy.setAttribute(new ServletWebRequest(httpServletRequest),SESSION_SMS_KEY, validatorCode);
-            ValidatorName.setSmsKey(deviceId);
+//            ValidatorName.setSmsKey(deviceId);
             redisService.setKey(deviceId,validatorCode);
             String phone=ServletRequestUtils.getRequiredStringParameter(httpServletRequest,"phone");
             mydefaultSmsSender.sendCode(phone,validatorCode);

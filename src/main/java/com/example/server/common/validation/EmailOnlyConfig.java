@@ -2,6 +2,7 @@ package com.example.server.common.validation;
 
 import com.example.server.entity.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -15,6 +16,7 @@ import javax.validation.ConstraintValidatorContext;
  */
 public class EmailOnlyConfig implements ConstraintValidator<EmailOnly,Object> {
     @Autowired
+    @Qualifier("userRepository")
     private UserRepository userRepository;
     @Override
     public boolean isValid(Object value, ConstraintValidatorContext context) {
